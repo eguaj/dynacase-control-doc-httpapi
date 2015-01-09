@@ -1,0 +1,74 @@
+book:
+    title: "API HTTP"
+    module: "Dynacase Control"
+    version: "1"
+    author: "Anakeen Labs &lt;labs@anakeen.com&gt;"
+    edition: "1"
+    chapters:
+      - level:          1
+        content:        "intro.md"
+
+      - level:          1
+        content:        "resume.md"
+
+      - level:          1
+        content:        "setup/introduction.md"
+        subtoc:         2
+      - level:                  2
+        content:                "setup/get_version.md"
+      - level:                  2
+        content:                "setup/update_version.md"
+
+      - level:          1
+        content:        "parameters/introduction.md"
+        subtoc:         2
+      - level:                  2
+        content:                "parameters/list_parameters.md"
+      - level:                  2
+        content:                "parameters/get_parameter.md"
+      - level:                  2
+        content:                "parameters/modify_parameter.md"
+
+      - level:          1
+        content:        "repositories/introduction.md"
+        subtoc:         2
+      - level:                  2
+        content:                "repositories/list_repositories.md"
+      - level:                  2
+        content:                "repositories/get_repository.md"
+      - level:                  2
+        content:                "repositories/create_repository.md"
+      - level:                  2
+        content:                "repositories/modify_repository.md"
+      - level:                  2
+        content:                "repositories/delete_repository.md"
+
+      - level:          1
+        content:        "contexts/introduction.md"
+        subtoc:         2
+      - level:                  2
+        content:                "contexts/list_contexts.md"
+      - level:                  2
+        content:                "contexts/get_context.md"
+      - level:                  2
+        content:                "contexts/create_context.md"
+      - level:                  2
+        content:                "contexts/modify_context.md"
+      - level:                  2
+        content:                "contexts/delete_context.md"
+
+      - level:          1
+        content:        "context_repositoryLinks/introduction.md"
+        subtoc:         2
+
+      - level:                  2
+        content:                "contexts_repositoryLinks/list_repositoryLinks.md"
+      - level:                  2
+        content:                "contexts_repositoryLinks/get_repositoryLink.md"
+      - level:                  2
+        content:                "contexts_repositoryLinks/activate_repositoryLink.md"
+      - level:                  2
+        content:                "contexts_repositoryLinks/deactivate_repositoryLink.md"
+
+      - level:          1
+        content:        "sandbox/sandbox.md"
