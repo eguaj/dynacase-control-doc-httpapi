@@ -4,6 +4,7 @@ book:
     version: "1"
     author: "Anakeen Labs &lt;labs@anakeen.com&gt;"
     edition: "1"
+    id_prefix: "controlhttpapi"
     chapters:
       - level:          1
         content:        "intro.md"

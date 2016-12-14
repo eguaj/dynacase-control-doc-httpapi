@@ -19,15 +19,17 @@ propriété `data` : les autres propriétés du message ne sont pas présentés.
 ## Algorithme interprétation des réponses HTTP par le client REST
 
     SI HTTP status == 2xx ALORS
-        SI .warning existe et est non vide ALORS
+        SI .warning existe ET est non vide ALORS
             .warning contient les messages éventuels de warning
         FINSI
     SINON
         SI .success est false ALORS
             .error contient le message d'erreur
+            Interpréter la réponse comme une erreur de l'application
+        SINON
+            Interpréter la réponse comme une erreur HTTP
+                et gérer comme le ferait un client Web.
         FINSI
-        Interpréter la réponse comme une erreur HTTP
-            et gérer comme le ferait un client Web.
     FINSI
 
 ## Authentification
@@ -208,6 +210,95 @@ Réponse :
     HTTP/1.1 200 OK
     {
         success: true
+    }
+
+### system-parameters/
+
+|  Type  |              URL             |  Implanté  |  Signification                               |
+| ------ | ---------------------------- | ---------- | -------------------------------------------- |
+| GET    | */api/v1/system-parameters/* |            | Liste des sections et des paramètres système |
+| PUT    |                              |            |                                              |
+| POST   |                              |            |                                              |
+| DELETE |                              |            |                                              |
+
+* Lister les sections et les paramètres système :
+
+    GET /api/v1/system-parameters/
+
+Réponse :
+
+    [javascript]
+    HTTP/1.1 200 OK
+    {
+        "success": true,
+        "data": [
+            {
+                "section": "database",
+                "label": "Database server",
+                "description": "Database used by Dynacase context",
+                "parameters": [
+                    {
+                        "name": "core_db",
+                        "label": "Postgres service name",
+                        "description": "",
+                        "type": "text",
+                        "value": "dynacase"
+                    },
+                    ...
+                ]
+            },
+            ...
+        ]
+    }
+
+### system-parameters/{sectionName}/{paramName}
+
+|  Type  |  URL                                                  |  Implanté  |  Signification                                |
+| ------ | ----------------------------------------------------- | ---------- | --------------------------------------------- |
+| GET    | */api/v1/system-parameters/{sectionName}/{paramName}* |            | Récupérer un paramètre système avec sa valeur |
+| PUT    | */api/v1/system-parameters/{sectionName}/{paramName}* |            | Ecrire la valeur d'un paramètre système       |
+| POST   |                                                       |            |                                               |
+| DELETE |                                                       |            |                                               |
+
+* Récupérer la définition d'un paramètre système avec sa valeur :
+
+    GET /api/v1/system-parameters/database/core_db
+
+Réponse :
+
+    [javascript]
+    HTTP/1.1 200 OK
+    {
+        "success": true,
+        "data": {
+            "name": "core_db",
+            "label": "Postgres service name",
+            "description": "",
+            "type": "text",
+            "value": "dynacase"
+        }
+    }
+
+* Ecrire la valeur d'un paramètre système :
+
+    PUT /api/v1/system-parameters/database/core_db
+    {
+        "value": "foo"
+    }
+
+Réponse :
+
+    [javascript]
+    HTTP/1.1 200 OK
+    {
+        "success": true,
+        "data": {
+            "name": "core_db",
+            "label": "Postgres service name",
+            "description": "",
+            "type": "text",
+            "value": "foo"
+        }
     }
 
 ### parameters/
@@ -644,18 +735,18 @@ Réponse :
         }
     }
 
-### contexts/
+### context
 
-|  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
-| ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
-| GET    | */api/v1/contexts/*                                                  |                | Liste les contextes existants                                        |
-| PUT    |                                                                      |                | -                                                                    |
-| POST   |                                                                      |                | Créer un nouveau contexte (vierge ou à partir d'une archive)         |
-| DELETE |                                                                      |                | -                                                                    |
+|  Type  |                                 URL                                |    Implanté    |                            Signification                             |
+| ------ | ------------------------------------------------------------------ | -------------- | -------------------------------------------------------------------- |
+| GET    | */api/v1/context*                                                  |                | Informations du contexte                                             |
+| PUT    |                                                                    |                | -                                                                    |
+| POST   |                                                                    |                | -                                                                    |
+| DELETE |                                                                    |                | -                                                                    |
 
 * Lister les contextes :
 
-    GET /api/v1/contexts/
+    GET /api/v1/context
 
 Réponse :
 
@@ -664,14 +755,12 @@ Réponse :
     {
         success: true,
         data: {
-            contexts: [
-                {
-                    uri: "/api/v1/contexts/production",
-                    id: "production",
-                    rootPath: "/var/www/production"
-                },
+            context: {
+                uri: "/api/v1/context",
+                id: "production",
+                rootPath: "/var/www/production"
                 ...
-            ]
+            }
         }
     }
 
