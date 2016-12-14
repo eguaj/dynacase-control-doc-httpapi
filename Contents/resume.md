@@ -214,12 +214,12 @@ Réponse :
 
 ### system-parameters/
 
-|  Type  |              URL             |  Implanté  |  Signification                               |
-| ------ | ---------------------------- | ---------- | -------------------------------------------- |
-| GET    | */api/v1/system-parameters/* |            | Liste des sections et des paramètres système |
-| PUT    |                              |            |                                              |
-| POST   |                              |            |                                              |
-| DELETE |                              |            |                                              |
+|  Type  |              URL               |  Implanté  |  Signification                               |
+| ------ | ------------------------------ | ---------- | -------------------------------------------- |
+| GET    | **/api/v1/system-parameters/** |            | Liste des sections et des paramètres système |
+| PUT    |                                |            |                                              |
+| POST   |                                |            |                                              |
+| DELETE |                                |            |                                              |
 
 * Lister les sections et les paramètres système :
 
@@ -253,12 +253,12 @@ Réponse :
 
 ### system-parameters/{sectionName}/{paramName}
 
-|  Type  |  URL                                                  |  Implanté  |  Signification                                |
-| ------ | ----------------------------------------------------- | ---------- | --------------------------------------------- |
-| GET    | */api/v1/system-parameters/{sectionName}/{paramName}* |            | Récupérer un paramètre système avec sa valeur |
-| PUT    | */api/v1/system-parameters/{sectionName}/{paramName}* |            | Ecrire la valeur d'un paramètre système       |
-| POST   |                                                       |            |                                               |
-| DELETE |                                                       |            |                                               |
+|  Type  |  URL                                                    |  Implanté  |  Signification                                |
+| ------ | ------------------------------------------------------- | ---------- | --------------------------------------------- |
+| GET    | **/api/v1/system-parameters/{sectionName}/{paramName}** |            | Récupérer un paramètre système avec sa valeur |
+| PUT    | **/api/v1/system-parameters/{sectionName}/{paramName}** |            | Ecrire la valeur d'un paramètre système       |
+| POST   |                                                         |            |                                               |
+| DELETE |                                                         |            |                                               |
 
 * Récupérer la définition d'un paramètre système avec sa valeur :
 
@@ -305,7 +305,7 @@ Réponse :
 
 |  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
 | ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
-| GET    | */api/v1/parameters/*                                                |                | Liste des paramètres globaux de dynacase-control                     |
+| GET    | **/api/v1/parameters/**                                              |                | Liste des paramètres globaux de dynacase-control                     |
 | PUT    |                                                                      |                | -                                                                    |
 | POST   |                                                                      |                | -                                                                    |
 | DELETE |                                                                      |                | -                                                                    |
