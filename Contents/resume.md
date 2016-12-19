@@ -102,7 +102,7 @@ mise à jour est disponible.
 | ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
 | GET    | **/api/v1/setup**                                                    |                | Version de dynacase-control et version de mise à jour disponible     |
 | PUT    |                                                                      |                | -                                                                    |
-| POST   |                                                                      |                | Mettre à jour dynacase-control si mise à jour disponible             |
+| POST   | **/api/v1/setup**                                                    |                | Mettre à jour dynacase-control si mise à jour disponible             |
 | DELETE |                                                                      |                | -                                                                    |
 
 * Obtenir la version :
@@ -111,7 +111,6 @@ mise à jour est disponible.
 
 Réponse si pas de mise à jour disponible :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
@@ -122,7 +121,6 @@ Réponse si pas de mise à jour disponible :
 
 Réponse si une mise à jour est disponible :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
@@ -134,12 +132,10 @@ Réponse si une mise à jour est disponible :
 
 * Mettre à jour dynacase-control :
 
-    [javascript]
     POST /api/v1/setup
 
 Réponse si pas de mise à jour disponible :
 
-    [javascript]
     HTTP/1.1 409 Conflict
     {
         success: false,
@@ -151,7 +147,6 @@ Réponse si pas de mise à jour disponible :
 
 Réponse si mise à jour appliquée avec succés :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
@@ -163,7 +158,6 @@ Réponse si mise à jour appliquée avec succés :
 Réponse si erreur dans le téléchargement et/ou l'application de la mise à jour
 :
 
-    [javascript]
     HTTP/1.1 500 Error
     {
         success: false,
@@ -175,7 +169,7 @@ Réponse si erreur dans le téléchargement et/ou l'application de la mise à jo
 |  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
 | ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
 | GET    | **/api/v1/auth**                                                     |                | Gérer le mot de passe de connexion à dynacase-control                |
-| PUT    |                                                                      |                | Modifier le mot de passe de connexion                                |
+| PUT    | **/api/v1/auth**                                                     |                | Modifier le mot de passe de connexion                                |
 | POST   |                                                                      |                | -                                                                    |
 | DELETE |                                                                      |                | -                                                                    |
 
@@ -199,7 +193,6 @@ Réponse si authentifié :
 
 * Modifier le mot de passe de connexion :
 
-    [javascript]
     PUT /api/v1/auth
     {
         password: "50Me s3cr3t p4s5W0rD"
@@ -227,7 +220,6 @@ Réponse :
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         "success": true,
@@ -266,7 +258,6 @@ Réponse :
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         "success": true,
@@ -288,7 +279,6 @@ Réponse :
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         "success": true,
@@ -316,20 +306,17 @@ Réponse :
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
-        data: {
-            parameters: [
-                {
-                    uri: "/api/v1/parameters/proxy-host",
-                    id: "proxy-host",
-                    value: "http://localhost:3128"
-                },
-                ...
-            ]
-        }
+        data: [
+            {
+                uri: "/api/v1/parameters/proxy-host",
+                id: "proxy-host",
+                value: "http://localhost:3128"
+            },
+            ...
+        ]
     }
 
 ### parameters/{paramId}
@@ -347,16 +334,13 @@ Réponse :
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
         data: {
-            parameter: {
-                uri: "/api/v1/parameters/proxy-host",
-                id: "proxy-host",
-                value: "http://localhost:3128"
-            }
+            uri: "/api/v1/parameters/proxy-host",
+            id: "proxy-host",
+            value: "http://localhost:3128"
         }
     }
 
@@ -369,20 +353,17 @@ Réponse :
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
         data: {
-            parameter: {
-                uri: "/api/v1/parameters/proxy-host",
-                id: "proxy-host",
-                value: ""http://proxy.example.net:3128"
-            }
+            uri: "/api/v1/parameters/proxy-host",
+            id: "proxy-host",
+            value: ""http://proxy.example.net:3128"
         }
     }
 
-### eec
+### (OLD) eec
 
 |  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
 | ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
@@ -397,7 +378,6 @@ Réponse :
 
 Réponse si non enregistré :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
@@ -409,7 +389,6 @@ Réponse si non enregistré :
 
 Réponse si enregistré :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
@@ -429,7 +408,6 @@ Réponse si enregistré :
 
 Réponse si l'enregistrement auprès de EEC à réussi :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
@@ -441,7 +419,6 @@ Réponse si l'enregistrement auprès de EEC à réussi :
 
 Réponse si l'enregistrement auprès de EEC à échoué :
 
-    [javascript]
     HTTP/1.1 500 Error
     {
         success: false,
@@ -454,7 +431,6 @@ Réponse si l'enregistrement auprès de EEC à échoué :
 
 Réponse:
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true
@@ -462,7 +438,6 @@ Réponse:
 
 Réponse si control pas enregistré :
 
-    [javascript]
     HTTP/1.1 409 Conflict
     {
         success: false,
@@ -471,7 +446,6 @@ Réponse si control pas enregistré :
 
 Réponse si la soumission d'un contexte est en erreur :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         succcess: true,
@@ -481,7 +455,7 @@ Réponse si la soumission d'un contexte est en erreur :
         ]
     }
 
-### eec/{contextId}
+### (OLD) eec/{contextId}
 
 |  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
 | ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
@@ -496,7 +470,6 @@ Réponse si la soumission d'un contexte est en erreur :
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         succcess: true,
@@ -507,7 +480,6 @@ Réponse :
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 409 Conflict
     {
         success: false,
@@ -520,7 +492,6 @@ Réponse :
 
 Réponse
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         succcess: true,
@@ -529,13 +500,13 @@ Réponse
         }
     }
 
-### repositories/
+### (OLD) repositories/
 
 |  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
 | ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
 | GET    | */api/v1/repositories/*                                              |                | Liste des dépôts de paquets configurés sur dynacase-control          |
 | PUT    |                                                                      |                | -                                                                    |
-| POST   |                                                                      |                | Ajouter un nouveau dépôt de paquets                                  |
+| POST   | */api/v1/repositories/*                                              |                | Ajouter un nouveau dépôt de paquets                                  |
 | DELETE |                                                                      |                | -                                                                    |
 
 * Lister les dépôts :
@@ -544,32 +515,40 @@ Réponse
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
-        data: {
-            repositories: [
-                {
-                    uri: "/api/v1/repositories/foo",
-                    id: "foo",
-                    description: "ACME Corp. repository",
-                    url: "http://repo.example.net/foo/webinst",
-                    authenticated: "yes",
-                    login: "john.doe",
-                    default: true
-                },
-                ...
-            ]
-        }
+        data: [
+            {
+                uri: "/api/v1/repositories/foo",
+                id: "foo",
+                description: "ACME Corp. repository",
+                url: "http://repo.example.net/foo/webinst",
+                authenticated: "yes",
+                login: "john.doe",
+                default: true
+            },
+            ...
+        ]
     }
 
 * Ajouter un nouveau dépôt :
 
-    [javascript]
     POST /api/v1/repositories/
     {
-        repository: {
+        id: "local",
+        description: "Local repo",
+        protocol: "file",
+        ...
+    }
+
+Réponse :
+
+    HTTP/1.1 200 OK
+    {
+        success: true,
+        data: {
+            uri: "/api/v1/repositories/local,
             id: "local",
             description: "Local repo",
             protocol: "file",
@@ -577,24 +556,7 @@ Réponse :
         }
     }
 
-Réponse :
-
-    [javascript]
-    HTTP/1.1 200 OK
-    {
-        success: true,
-        data: {
-            repository: {
-                uri: "/api/v1/repositories/local,
-                id: "local",
-                description: "Local repo",
-                protocol: "file",
-                ...
-            }
-        }
-    }
-
-### repositories/{repoId}
+### (OLD) repositories/{repoId}
 
 |  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
 | ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
@@ -609,16 +571,13 @@ Réponse :
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
         data: {
-            repository: {
-                uri: "/api/v1/repositories/foo",
-                id: "foo",
-                ...
-            }
+            uri: "/api/v1/repositories/foo",
+            id: "foo",
+            ...
         }
     }
 
@@ -626,26 +585,21 @@ Réponse :
 
     PUT /api/v1/repositories/foo
     {
-        repository: {
-            description: "Secure ACME Corp. repository"
-            protocol: "https"
-        }
+        description: "Secure ACME Corp. repository"
+        protocol: "https"
     }
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
         data: {
-            repository: {
-                uri: "/api/v1/repositories/foo",
-                id: "foo",
-                description: "Secure ACME Corp. repository",
-                protocol: "https",
-                ...
-            }
+            uri: "/api/v1/repositories/foo",
+            id: "foo",
+            description: "Secure ACME Corp. repository",
+            protocol: "https",
+            ...
         }
     }
 
@@ -655,13 +609,12 @@ Réponse :
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true
     }
 
-### repositories/{repoId}/modules
+### (OLD) repositories/{repoId}/modules
 
 |  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
 | ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
@@ -681,7 +634,6 @@ utilisé pour télécharger le module).
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
@@ -706,7 +658,7 @@ Réponse :
         ]
     }
 
-### repositories/{repoId}/modules/{moduleSrc}
+### (OLD) repositories/{repoId}/modules/{moduleSrc}
 
 |  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
 | ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
@@ -721,7 +673,6 @@ Réponse :
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         succcess: true,
@@ -741,8 +692,8 @@ Réponse :
 | ------ | ------------------------------------------------------------------ | -------------- | -------------------------------------------------------------------- |
 | GET    | */api/v1/context*                                                  |                | Informations du contexte                                             |
 | PUT    |                                                                    |                | -                                                                    |
-| POST   |                                                                    |                | -                                                                    |
-| DELETE |                                                                    |                | -                                                                    |
+| POST   | */api/v1/context*                                                  |                | Modifier des propriétés du contexte                                  |
+| DELETE | */api/v1/context*                                                  |                | Supprimer le contexte                                                |
 
 * Lister les contextes :
 
@@ -750,34 +701,30 @@ Réponse :
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
         data: {
-            context: {
-                uri: "/api/v1/context",
-                id: "production",
-                rootPath: "/var/www/production"
-                ...
-            }
+            uri: "/api/v1/context",
+            id: "production",
+            root: "/var/www/production",
+            url: "https://prod.example.net/",
+            register: "unregistered"
         }
     }
 
 * Créer un nouveau contexte vierge :
 
-    [javascript]
     POST /api/v1/contexts/
     {
         context: {
             id: "pre-production",
-            rootPath: "/var/www/pre-production"
+            root: "/var/www/pre-production"
         }
     }
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
@@ -785,72 +732,7 @@ Réponse :
             context: {
                 uri: "/api/v1/contexts/pre-production",
                 id: "pre-production",
-                rootPath: "/var/www/pre-production"
-            }
-        }
-    }
-
-* Créer un nouveau contexte à partir d'une archive :
-
-    [javascript]
-    POST /api/v1/contexts/
-    {
-        context: {
-            id: "pre-production",
-            root: "/var/www/pre-production",
-	    restore: {
-                archive: "1f6f1a82-f3e1-48da-a3d9-4c42251d0360"
-                pgServiceName: "pg-pre-production",
-                vaultRootPath: "/var/www/pre-production/vaultfs",
-                removeProfiles: false,
-                userLogin: "admin",
-                userPassword: "secret",
-                cleanTmpDirectory: true
-            }
-        }
-    }
-
-Réponse :
-
-    [javascript]
-    HTTP/1.1 200 OK
-    {
-        success: true,
-        data: {
-            context: {
-                id: "pre-production",
-                rootPath: "/var/www/pre-production"
-            }
-        }
-    }
-
-### contexts/{contextId}
-
-|  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
-| ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
-| GET    | **/api/v1/contexts/{contextId}**                                     |                | Liste les propriétés du contexte                                     |
-| PUT    |                                                                      |                | Modifier les propriétés du contexte                                  |
-| POST   |                                                                      |                |                                                                      |
-| DELETE |                                                                      |                | Supprimer le contexte                                                |
-
-* Lister les propriétés du contexte :
-
-    GET /api/v1/contexts/production
-
-Réponse :
-
-    [javascript]
-    HTTP/1.1 200 OK
-    {
-        success: true,
-        data: {
-            context: {
-                uri: "/api/v1/contexts/production",
-                id: "production",
-                root: "/var/www/production",
-                description: "Production context"
-                url: "http://prod.example.net/",
-                register: false
+                root: "/var/www/pre-production"
             }
         }
     }
@@ -867,7 +749,6 @@ Réponse :
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
@@ -889,13 +770,12 @@ Réponse :
 
 Réponse
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true
     }
 
-### contexts/{contextId}/repositoryLinks/
+### (OLD) context/repositoryLinks/
 
 |  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
 | ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
@@ -910,7 +790,6 @@ Réponse
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
@@ -936,7 +815,6 @@ Réponse :
 
 * Lier un dépôt au contexte :
 
-    [javascript]
     POST /api/v1/contexts/{contextId}/repositoryLinks/
     {
         repositoryLink: {
@@ -946,7 +824,6 @@ Réponse :
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
@@ -964,11 +841,11 @@ Réponse :
         }
     }
 
-### context/{contextId}/repositoryLinks/{repoId}
+### (OLD) repositoryLinks/{repoId}
 
 |  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
 | ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
-| GET    | **/api/v1/contexts/{contextId}/repositoryLinks/{repoId}**            |                | Récupérer les propriétés du dépôt de paquets lié sur le contexte     |
+| GET    | **/api/v1/repositoryLinks/{repoId}**                                 |                | Récupérer les propriétés du dépôt de paquets lié sur le contexte     |
 | PUT    |                                                                      |                | -                                                                    |
 | POST   |                                                                      |                | -                                                                    |
 | DELETE |                                                                      |                | Dé-lier un dépôt du contexte                                         |
@@ -979,7 +856,6 @@ Réponse :
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
@@ -996,7 +872,6 @@ Réponse :
 
 Réponse si le dépôt n'est pas lié sur le contexte :
 
-    [javascript]
     HTTP/1.1 404 Not found
     {
         success: false,
@@ -1009,7 +884,6 @@ Réponse si le dépôt n'est pas lié sur le contexte :
 
 Réponse : 
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true
@@ -1017,18 +891,17 @@ Réponse :
 
 Réponse si le dépôt n'est pas lié sur le contexte :
 
-    [javascript]
     HTTP/1.1 404 Not found
     {
         success: false,
         error: "The repository 'foo' is not linked in context 'pre-production'."
     }
 
-### contexts/{contextId}/modules/
+### (DRAFT) modules/
 
 |  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
 | ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
-| GET    | */api/v1/contexts/{contextId}/modules/*                              |                | Liste des modules installés/disponibles/upgradables sur le contexte  |
+| GET    | */api/v1//modules/*                                                  |                | Liste des modules installés/disponibles/upgradables sur le contexte  |
 | PUT    |                                                                      |                | -                                                                    |
 | POST   |                                                                      |                | Uploader un module et l'installer/upgrader dans le contexte          |
 | DELETE |                                                                      |                | -                                                                    |
@@ -1055,76 +928,57 @@ contenant l'identifiant du dépôt d'où ils proviennent.
 
 * Lister tous les modules :
 
-    GET /api/v1/contexts/pre-production/modules/
+    GET /api/v1/modules/
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
-        data: {
-            modules: [
-                {
-                    uri: "/api/v1/contexts/pre-production/modules/dynacase-core",
-                    id: "dynacase-core",
-                    name: "dynacase-core",
-                    version: "3.2.18",
-                    release: "0.20141127.174457",
-                    status: "installed",
-                    ...
-                    updatedBy: [
-                        "local/dynacase-core-3.2.18-0.20150112.123456.webinst"
-                    ],
-                    replacedBy: [
-                        "foo/dynacase-foo-1.0.0-0.webinst"
-                    ]
-                },
-                ...
-                {
-                    uri: "/api/v1/repositories/local/modules/dynacase-core-3.2.18-0.20150112.123456.webinst",
-                    id: "local/dynacase-core-3.2.18-0.20150112.123456.webinst",
-                    name: "dynacase-core",
-                    version: "3.2.18",
-                    release: "0.20150112.123456",
-                    ...
-                    repository: {
-                        id: "local",
-                        uri: "/api/v1/repositories/local"
-                    },
-                    update: [
-                        "dynacase-core"
-                    ]
-                },
-                {
-                    uri: "api/v1/repositories/",
-                    id: "foo/dynacase-foo-1.0.0-0.webinst",
-                    name: "dynacase-foo",
-                    version: "1.0.0",
-                    release: "0",
-                    ...
-                    repository: {
-                        id: "foo",
-                        uri: "/api/v1/repositories/foo"
-                    },
-                    replace: [
-                        "dynacase-core"
-                    ]
-                },
-                {
-                    uri: "/api/v1/repositories/local/modules/my-module-1.0.0-0.webinst",
-                    id: "local/my-module-1.0.0-0.webinst"
-                    name: "my-module",
-                    version: "1.0.0",
-                    release: "0",
-                    ...
-                    repository: {
-                        id: "local",
-                        uri: "/api/v1/repositories/local"
-                    }
+        data: [
+            {
+                uri: "/api/v1/modules/dynacase-core",
+                id: "dynacase-core",
+                version: "3.2.18",
+                release: "0.20141127.174457",
+                status: "installed",
+                repository: {
+                    uri: "/api/v1/repositories/dynacase"
+                    id: "dynacase",
+                    description: "Dynacase"
                 }
-            ]
-        }
+                ...
+                updatedBy: [
+                    {
+                        uri: "/api/v1/repositories/local/dynacase-core",
+                        id: "dynacase-core",
+                        version: "3.2.18",
+                        release: "0.20150112.123456"
+                    }
+                ],
+                replacedBy: [
+                    {
+                        uri: "/api/v1/repositories/foo/dynacase-foo",
+                        id: "dynacase-foo",
+                        version: "1.0.0",
+                        release: "0",
+                    }
+                ]
+            }
+            ...
+            {
+                uri: "/api/v1/repositories/local/modules/my-module-1.0.0-0.webinst",
+                id: "my-module"
+                version: "1.0.0",
+                release: "0",
+                ...
+                repository: {
+                    uri: "/api/v1/repositories/local"
+                    id: "local",
+                    description: "Local development repository"
+                }
+            }
+        ]
     }
 
 * Rechercher la dernière version d'un module :
@@ -1137,7 +991,6 @@ Réponse :
 
 Réponse :
 
-    [javascript]
     HTTTP/1.1 200 OK
     {
         success: true,
@@ -1160,7 +1013,6 @@ recherché.
 
 Installe un module nommé "my-module" (celui qui a la version la plus haute) :
 
-    [javascript]
     POST /api/v1/contexts/pre-production/modules/
     {
         install: [
@@ -1170,9 +1022,8 @@ Installe un module nommé "my-module" (celui qui a la version la plus haute) :
         ]
     }
 
-Installe un module spécifique `{repo, nom, version, release}` :
+Installer un module spécifique `{repo, nom, version, release}` :
 
-    [javascript]
     POST /api/v1/contexts/pre-production/modules/
     {
         install: [
@@ -1184,7 +1035,6 @@ Installe un module spécifique `{repo, nom, version, release}` :
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
@@ -1198,7 +1048,6 @@ Réponse :
 
 * Mettre à jour "dynacase-core" :
 
-    [javascript]
     POST /api/v1/contexts/pre-production/modules/
     {
         install: [
@@ -1214,7 +1063,6 @@ ou non.
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
@@ -1228,7 +1076,6 @@ Réponse :
 
 * Uploader un paquet au format webinst (`my-module.webinst`) et l'installer :
 
-    [javascript]
     POST /api/v1/contexts/pre-production/modules/
     Content-Type: multipart/form-data; boundary=AaB03x
     
@@ -1240,7 +1087,6 @@ Réponse :
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
@@ -1278,7 +1124,6 @@ installation.
 
 Résponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
@@ -1315,7 +1160,6 @@ Résponse :
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         parameters: [
@@ -1344,7 +1188,6 @@ Réponse :
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         parameter: {
@@ -1363,7 +1206,6 @@ Réponse :
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 409 Conflict
     {
         success: false,
@@ -1387,7 +1229,6 @@ Actuellement, les paramètres ne sont pas modifiables.
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         archives: [
@@ -1413,7 +1254,6 @@ Réponse :
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true
@@ -1442,7 +1282,6 @@ Réponse :
 
 Réponse
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         archive: {
@@ -1470,7 +1309,6 @@ Réponse
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true
@@ -1521,7 +1359,6 @@ Une transaction est globale ? Ou par contexte ?
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
@@ -1570,7 +1407,6 @@ Réponse :
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
@@ -1663,7 +1499,6 @@ Réponse :
 
 Réponse :
 
-    [javascript]
     ... wait for end-of-transaction or failed operation ...
     HTTP/1.1 200 OK
     {
@@ -1679,7 +1514,6 @@ Réponse :
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
@@ -1702,7 +1536,6 @@ Réponse :
 Réponse si la transaction s'est naturellement terminée (`status=end` et
 `currentOperation=end`) :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true
@@ -1710,7 +1543,6 @@ Réponse si la transaction s'est naturellement terminée (`status=end` et
 
 Réponse si la transaction n'est pas terminée :
 
-    [javascript]
     HTTP/1.1 409 Conflict
     {
         success: false,
@@ -1723,7 +1555,6 @@ Réponse si la transaction n'est pas terminée :
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
@@ -1746,7 +1577,6 @@ Tuer les opérations qui tournent et supprimer la transaction.
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
@@ -1842,7 +1672,6 @@ Type d'opérations :
 :   Élément représentant une section, un commenntaire, une information pour
     délimiter les opérations, etc.
     
-        [javascript]
         h1: {
             label: "Label de la section"
             }
@@ -1856,7 +1685,6 @@ Type d'opérations :
 `task`
 :   Élément représentant une tâche a exécuter.
     
-        [javascript]
         task: {
             label: "Label de description de l'opération"
             }
@@ -1881,7 +1709,6 @@ Type d'opérations :
 :   Élément représentant une licence pour laquelle l'utilisateur doit donner
     son accord.
     
-        [javascript]
         license: {
             licenseName: "ACME Corp. Public License 1.0"
             licenseText: "... content in text/plain ..."
@@ -1902,7 +1729,6 @@ Type d'opérations :
 `prompt`
 :   Élément pour poser des questions et demander une réponse à l'utilisateur.
     
-        [javascript]
         prompt: [
             {
                 id: "core_db",
@@ -1941,7 +1767,6 @@ Type d'opérations :
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
@@ -1958,7 +1783,6 @@ Réponse :
 
 Réponse si la l'opération est en cours d'exécution :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
@@ -1981,7 +1805,6 @@ Réponse si la l'opération est en cours d'exécution :
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
@@ -2001,7 +1824,6 @@ Réponse :
 
 Réponse si fin de transaction :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
@@ -2022,7 +1844,6 @@ Le client doit alors supprimer la transaction avec `DELETE`.
 
 Réponse si erreur :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
@@ -2038,7 +1859,6 @@ Réponse si erreur :
 
 Réponse si opération déjà en cours d'exécution :
 
-    [javascript]
     HTTP/1.1 409 Conflict
     {
         success: false,
@@ -2051,7 +1871,6 @@ Réponse si opération déjà en cours d'exécution :
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
@@ -2072,7 +1891,6 @@ Réponse :
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true
@@ -2080,7 +1898,6 @@ Réponse :
 
 Réponse si l'opération ne tourne pas :
 
-    [javascript]
     HTTP/1.1 409 Conflict
     {
         success: false,
@@ -2093,7 +1910,6 @@ Réponse si l'opération ne tourne pas :
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
@@ -2110,14 +1926,12 @@ Réponse :
 
 Réponse si l'opération n'est pas en échec ou tourne encore :
 
-    [javascript]
     HTTP/1.1 409 Conflict
     {
         success: false,
         error: "Operation 8 is runnning."
     }
 
-    [javascript]
     HTTP/1.1 409 Conflict
     {
         success: false,
@@ -2311,7 +2125,6 @@ Exemple de transaction :
 
 Réponse :
 
-    [javascript]
     HTTP/1.1 200 OK
     {
         success: true,
