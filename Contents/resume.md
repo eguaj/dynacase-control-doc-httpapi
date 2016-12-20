@@ -13,29 +13,39 @@
         data: <json(responseData)>
     }
 
-Dans les réponse ci-dessous, la réponse ne présente que le contenu de la
-propriété `data` : les autres propriétés du message ne sont pas présentés.
-
 ## Algorithme interprétation des réponses HTTP par le client REST
 
     SI HTTP status == 2xx ALORS
-        SI .warning existe ET est non vide ALORS
-            .warning contient les messages éventuels de warning
+        SI la réponse n'est pas un objet JSON valide ALORS
+            ARRET: erreur générale de communication
         FINSI
+        SI la réponse n'a pas les 4 propriétés {success, error, warnings, data} ALORS
+            ARRET: erreur générale de communication
+        FINSI
+        SI .success !== true ALORS
+            ARRET: erreur de l'API : voir .error avec le message d'erreur
+        FINSI
+        SI .warning existe ET est un array non vide ALORS
+            présenter les messages éventuels de warning
+        FINSI
+        traiter la réponse .data
     SINON
-        SI .success est false ALORS
-            .error contient le message d'erreur
-            Interpréter la réponse comme une erreur de l'application
-        SINON
-            Interpréter la réponse comme une erreur HTTP
-                et gérer comme le ferait un client Web.
+        SI la réponse n'est pas un objet JSON valide ALORS
+            ARRET: erreur générale de communication
         FINSI
+        SI la réponse n'a pas les 4 propétés {success, error, warnings, data} ALORS
+            ARRET: erreur générale de communication
+        FINSI
+        SI .success !== false ALORS
+            ARRET: erreur conflit sémantique...
+        FINSI
+        traiter la réponse d'erreur
     FINSI
 
 ## Authentification
 
-Cas (1) : on garde le fonctionnement actuel qui est que toute requête doit être
-authentifiée par HTTP Basic.
+On garde le fonctionnement actuel qui est que toute requête doit être
+authentifiée par HTTP Basic et que c'est Apache qui gère l'authentification.
 
 Après avoir installé dynacase-control, la seule requête possible est celle pour
 positionner le mot de passe :
@@ -100,10 +110,12 @@ mise à jour est disponible.
 
 |  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
 | ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
-| GET    | **/api/v1/setup**                                                    |                | Version de dynacase-control et version de mise à jour disponible     |
+| GET    | **/api/v1/setup**                                                    | 100%           | Version de dynacase-control et version de mise à jour disponible     |
 | PUT    |                                                                      |                | -                                                                    |
-| POST   | **/api/v1/setup**                                                    |                | Mettre à jour dynacase-control si mise à jour disponible             |
+| POST   | **/api/v1/setup**                                                    | 0%             | Mettre à jour dynacase-control si mise à jour disponible             |
 | DELETE |                                                                      |                | -                                                                    |
+
+#### GET
 
 * Obtenir la version :
 
@@ -129,6 +141,8 @@ Réponse si une mise à jour est disponible :
             update: "2.0.0-1"
         }
     }
+
+#### POST
 
 * Mettre à jour dynacase-control :
 
@@ -168,10 +182,12 @@ Réponse si erreur dans le téléchargement et/ou l'application de la mise à jo
 
 |  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
 | ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
-| GET    | **/api/v1/auth**                                                     |                | Gérer le mot de passe de connexion à dynacase-control                |
-| PUT    | **/api/v1/auth**                                                     |                | Modifier le mot de passe de connexion                                |
+| GET    | **/api/v1/auth**                                                     | 100%           | Gérer le mot de passe de connexion à dynacase-control                |
+| PUT    | **/api/v1/auth**                                                     | 100%           | Modifier le mot de passe de connexion                                |
 | POST   |                                                                      |                | -                                                                    |
 | DELETE |                                                                      |                | -                                                                    |
+
+#### GET
 
 * Status authentification :
 
@@ -188,31 +204,60 @@ Réponse si authentifié :
 
     HTTP/1.1 200 OK
     {
-        success: true
+        "success": true
     }
+
+#### PUT
 
 * Modifier le mot de passe de connexion :
 
     PUT /api/v1/auth
     {
-        password: "50Me s3cr3t p4s5W0rD"
+        "password": "50Me s3cr3t p4s5W0rD"
     }
 
 Réponse :
 
     HTTP/1.1 200 OK
     {
-        success: true
+        "success": true
     }
 
 ### system-parameters/
 
+Présentation des `system-parameters` :
+
+L'idée de ces paramètres est de remplacer certains paramètres "CORE" de
+Dynacase. Dynacase n'aurait donc plus de références en dur à la base de données
+par exemple, mais demanderait à Control de lui fournir les coordonnées de sa
+base de données. Idem pour le vault.
+
+Le fonctionnement global précis reste encore à définir,
+
+Les paramètres sont regroupés dans des sections et sont typés. Une contrainte
+peut être appliquée lors de la sauvegarde des valeurs des paramètres pour
+vérifier que la valeur est correcte par exemple.
+
+* Section "Base de données" :
+  * Nom du service postgresql : type "text"
+* Section "SMTP" :
+  * Nom d'hôte : type "text"
+  * Port : type "integer"
+  * autres ?
+* Section "Vault" :
+  * Chemin du vault : type "text"
+* autres ?
+
+
+
 |  Type  |              URL               |  Implanté  |  Signification                               |
 | ------ | ------------------------------ | ---------- | -------------------------------------------- |
-| GET    | **/api/v1/system-parameters/** |            | Liste des sections et des paramètres système |
+| GET    | **/api/v1/system-parameters/** | 100%       | Liste des sections et des paramètres système |
 | PUT    |                                |            |                                              |
 | POST   |                                |            |                                              |
 | DELETE |                                |            |                                              |
+
+#### GET
 
 * Lister les sections et les paramètres système :
 
@@ -225,11 +270,13 @@ Réponse :
         "success": true,
         "data": [
             {
+                "uri": "/api/v1/system-paremeters/database",
                 "section": "database",
                 "label": "Database server",
                 "description": "Database used by Dynacase context",
                 "parameters": [
                     {
+                        "uri": "/api/v1/system-parameters/database/core_db",
                         "name": "core_db",
                         "label": "Postgres service name",
                         "description": "",
@@ -243,14 +290,55 @@ Réponse :
         ]
     }
 
+### system-parameters/{sectionName}
+
+|  Type  |  URL                                                    |  Implanté  |  Signification                                |
+| ------ | ------------------------------------------------------- | ---------- | --------------------------------------------- |
+| GET    | **/api/v1/system-parameters/{sectionName}**             | 0%         | Récupérer les paramètres d'une section        |
+| PUT    |                                                         |            |                                               |
+| POST   |                                                         |            |                                               |
+| DELETE |                                                         |            |                                               |
+
+#### GET
+
+* Récupérer les paramètres d'une sectoin :
+
+    GET /api/v1/system-parameters/database
+
+Réponse :
+
+    HTTP/1.1 200 OK
+    {
+        "success": true,
+        "data": {
+            "uri": "/api/v1/system-paremeters/database",
+            "section": "database",
+            "label": "Database server",
+            "description": "Database used by Dynacase context",
+            "parameters": [
+                {
+                    "uri": "/api/v1/system-parameters/database/core_db",
+                    "name": "core_db",
+                    "label": "Postgres service name",
+                    "description": "",
+                    "type": "text",
+                    "value": "dynacase"
+                },
+                ...
+            ]
+        }
+    }
+
 ### system-parameters/{sectionName}/{paramName}
 
 |  Type  |  URL                                                    |  Implanté  |  Signification                                |
 | ------ | ------------------------------------------------------- | ---------- | --------------------------------------------- |
-| GET    | **/api/v1/system-parameters/{sectionName}/{paramName}** |            | Récupérer un paramètre système avec sa valeur |
-| PUT    | **/api/v1/system-parameters/{sectionName}/{paramName}** |            | Ecrire la valeur d'un paramètre système       |
+| GET    | **/api/v1/system-parameters/{sectionName}/{paramName}** | 100%       | Récupérer un paramètre système avec sa valeur |
+| PUT    | **/api/v1/system-parameters/{sectionName}/{paramName}** | 100%       | Ecrire la valeur d'un paramètre système       |
 | POST   |                                                         |            |                                               |
 | DELETE |                                                         |            |                                               |
+
+#### GET
 
 * Récupérer la définition d'un paramètre système avec sa valeur :
 
@@ -262,6 +350,7 @@ Réponse :
     {
         "success": true,
         "data": {
+            "uri": "/api/v1/system-parameters/database/core_db",
             "name": "core_db",
             "label": "Postgres service name",
             "description": "",
@@ -269,6 +358,8 @@ Réponse :
             "value": "dynacase"
         }
     }
+
+#### PUT
 
 * Ecrire la valeur d'un paramètre système :
 
@@ -283,6 +374,7 @@ Réponse :
     {
         "success": true,
         "data": {
+            "uri": "/api/v1/system-parameters/database/core_db",
             "name": "core_db",
             "label": "Postgres service name",
             "description": "",
@@ -295,10 +387,12 @@ Réponse :
 
 |  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
 | ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
-| GET    | **/api/v1/parameters/**                                              |                | Liste des paramètres globaux de dynacase-control                     |
+| GET    | **/api/v1/parameters/**                                              | 100%           | Liste des paramètres globaux de dynacase-control                     |
 | PUT    |                                                                      |                | -                                                                    |
 | POST   |                                                                      |                | -                                                                    |
 | DELETE |                                                                      |                | -                                                                    |
+
+#### GET
 
 * Lister les paramètres de dynacase-control :
 
@@ -308,12 +402,12 @@ Réponse :
 
     HTTP/1.1 200 OK
     {
-        success: true,
-        data: [
+        "success": true,
+        "data": [
             {
-                uri: "/api/v1/parameters/proxy-host",
-                id: "proxy-host",
-                value: "http://localhost:3128"
+                "uri": "/api/v1/parameters/proxy-host",
+                "id": "proxy-host",
+                "value": "http://localhost:3128"
             },
             ...
         ]
@@ -323,10 +417,12 @@ Réponse :
 
 |  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
 | ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
-| GET    | **/api/v1/parameters/{paramId}**                                     |                | Récupérer la valeur d'un paramètre de dynacase-control               |
-| PUT    |                                                                      |                | Modifier la valeur d'un paramètre de dynacase-control                |
+| GET    | **/api/v1/parameters/{paramId}**                                     | 100%           | Récupérer la valeur d'un paramètre de dynacase-control               |
+| PUT    | **/api/v1/parameters/{paramId}**                                     | 0%             | Modifier la valeur d'un paramètre de dynacase-control                |
 | POST   |                                                                      |                | -                                                                    |
 | DELETE |                                                                      |                | -                                                                    |
+
+#### GET
 
 * Lire la valeur d'un paramètre :
 
@@ -336,178 +432,45 @@ Réponse :
 
     HTTP/1.1 200 OK
     {
-        success: true,
-        data: {
-            uri: "/api/v1/parameters/proxy-host",
-            id: "proxy-host",
-            value: "http://localhost:3128"
+        "success": true,
+        "data": {
+            "uri": "/api/v1/parameters/proxy-host",
+            "id": "proxy-host",
+            "value": "http://localhost:3128"
         }
     }
+
+#### PUT
 
 * Modifier la valeur d'un paramète :
 
     PUT /api/v1/parameters/proxy-host
     {
-        value: "http://proxy.example.net:3128"
+        "value": "http://proxy.example.net:3128"
     }
 
 Réponse :
 
     HTTP/1.1 200 OK
     {
-        success: true,
-        data: {
-            uri: "/api/v1/parameters/proxy-host",
-            id: "proxy-host",
-            value: ""http://proxy.example.net:3128"
+        "success: true,
+        "data: {
+            "uri": "/api/v1/parameters/proxy-host",
+            "id": "proxy-host",
+            "value": ""http://proxy.example.net:3128"
         }
     }
 
-### (OLD) eec
+### repositories/
 
 |  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
 | ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
-| GET    | **/api/v1/eec**                                                      |                | Voir le status de registration EEC                                   |
-| PUT    |                                                                      |                | Modifier la valeur de la registration EEC                            |
-| POST   |                                                                      |                | Soumettre les infos des tous les contextes "registered: true"        |
-| DELETE |                                                                      |                | -                                                                    |
-
-* Voir si compte EEC configuré :
-
-    GET /api/v1/eec
-
-Réponse si non enregistré :
-
-    HTTP/1.1 200 OK
-    {
-        success: true,
-        data: {
-            login: "",
-            registered: false
-        }
-    }
-
-Réponse si enregistré :
-
-    HTTP/1.1 200 OK
-    {
-        success: true,
-        data: {
-            login: "acmecorp",
-            registered: true
-        }
-    }
-
-* S'enregistrer :
-
-    PUT /api/v1/eec
-    {
-        login: "acmecorp",
-        password: "s3cr3t"
-    }
-
-Réponse si l'enregistrement auprès de EEC à réussi :
-
-    HTTP/1.1 200 OK
-    {
-        success: true,
-        data: {
-            login: "acmecorp",
-            registered: true
-        }
-    }
-
-Réponse si l'enregistrement auprès de EEC à échoué :
-
-    HTTP/1.1 500 Error
-    {
-        success: false,
-        error: "Registration with login 'acmecorp' failed: xxx"
-    }
-
-* Envoyer les informations de tous les contextes déclarés pour enregistrement :
-
-    POST /api/v1/eec
-
-Réponse:
-
-    HTTP/1.1 200 OK
-    {
-        success: true
-    }
-
-Réponse si control pas enregistré :
-
-    HTTP/1.1 409 Conflict
-    {
-        success: false,
-        error: "Dynacase control is not registered with a EEC account. Please register first with a EEC account."
-    }
-
-Réponse si la soumission d'un contexte est en erreur :
-
-    HTTP/1.1 200 OK
-    {
-        succcess: true,
-        warnings: [
-            "Error sending registration information for context 'foo': xxx",
-            "Error sending registration information for context 'bar': xxx"
-        ]
-    }
-
-### (OLD) eec/{contextId}
-
-|  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
-| ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
-| GET    | **/api/v1/eec/{contextId}**                                          |                | Voir les infos qui sont soumise par EEC pour le contexte             |
+| GET    | **/api/v1/repositories/**                                            | 100%           | Liste des dépôts de paquets configurés sur dynacase-control          |
 | PUT    |                                                                      |                | -                                                                    |
-| POST   |                                                                      |                | Soumettre les infos EEC pour ce contexte                             |
+| POST   | **/api/v1/repositories/**                                            | 100%           | Ajouter un nouveau dépôt de paquets                                  |
 | DELETE |                                                                      |                | -                                                                    |
 
-* Voir les informations qui seraient soumise pour un contexte :
-
-    GET /api/v1/eec/production
-
-Réponse :
-
-    HTTP/1.1 200 OK
-    {
-        succcess: true,
-        data: {
-            xml: "..."
-        }
-    }
-
-Réponse :
-
-    HTTP/1.1 409 Conflict
-    {
-        success: false,
-        error: "Context 'production' is not registered for submission."
-    }
-
-* Soumettre les informations du contexte :
-
-    POST /api/v1/eec/production
-
-Réponse
-
-    HTTP/1.1 200 OK
-    {
-        succcess: true,
-        data: {
-            xml: "..."
-        }
-    }
-
-### (OLD) repositories/
-
-|  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
-| ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
-| GET    | */api/v1/repositories/*                                              |                | Liste des dépôts de paquets configurés sur dynacase-control          |
-| PUT    |                                                                      |                | -                                                                    |
-| POST   | */api/v1/repositories/*                                              |                | Ajouter un nouveau dépôt de paquets                                  |
-| DELETE |                                                                      |                | -                                                                    |
+#### GET
 
 * Lister les dépôts :
 
@@ -517,28 +480,31 @@ Réponse :
 
     HTTP/1.1 200 OK
     {
-        success: true,
-        data: [
+        "success": true,
+        "data": [
             {
-                uri: "/api/v1/repositories/foo",
-                id: "foo",
-                description: "ACME Corp. repository",
-                url: "http://repo.example.net/foo/webinst",
-                authenticated: "yes",
-                login: "john.doe",
-                default: true
+                "uri": "/api/v1/repositories/foo",
+                "id": "foo",
+                "description": "ACME Corp. repository",
+                "url": "http://repo.example.net/foo/webinst",
+                "authenticated": "yes",
+                "login": "john.doe",
+                "default": true,
+                "enabled": true
             },
             ...
         ]
     }
 
+#### POST
+
 * Ajouter un nouveau dépôt :
 
     POST /api/v1/repositories/
     {
-        id: "local",
-        description: "Local repo",
-        protocol: "file",
+        "id": "local",
+        "description": "Local repo",
+        "enabled": false,
         ...
     }
 
@@ -546,24 +512,26 @@ Réponse :
 
     HTTP/1.1 200 OK
     {
-        success: true,
-        data: {
-            uri: "/api/v1/repositories/local,
-            id: "local",
-            description: "Local repo",
-            protocol: "file",
+        "success": true,
+        "data": {
+            "uri": "/api/v1/repositories/local,
+            "id": "local",
+            "description": "Local repo",
+            "enabled": false,
             ...
         }
     }
 
-### (OLD) repositories/{repoId}
+### repositories/{repoId}
 
 |  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
 | ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
-| GET    | **/api/v1/repositories/{repoId}**                                    |                | Paramètres du dépôt de paquets                                       |
-| PUT    |                                                                      |                | Modifier les paramètres du dépôt                                     |
+| GET    | **/api/v1/repositories/{repoId}**                                    | 100%           | Paramètres du dépôt de paquets                                       |
+| PUT    | **/api/v1/repositories/{repoId}**                                    | 100%           | Modifier les paramètres du dépôt                                     |
 | POST   |                                                                      |                | -                                                                    |
-| DELETE |                                                                      |                | Supprimer le dépôt de paquets                                        |
+| DELETE | **/api/v1/repositories/{repoId}**                                    | 100%           | Supprimer le dépôt de paquets                                        |
+
+#### GET
 
 * Requête consultation dépôt :
 
@@ -573,35 +541,40 @@ Réponse :
 
     HTTP/1.1 200 OK
     {
-        success: true,
-        data: {
-            uri: "/api/v1/repositories/foo",
-            id: "foo",
+        "success": true,
+        "data: {
+            "uri": "/api/v1/repositories/foo",
+            "id": "foo",
+            "enabled": true,
             ...
         }
     }
+
+#### PUT
 
 * Requête modification dépôt :
 
     PUT /api/v1/repositories/foo
     {
-        description: "Secure ACME Corp. repository"
-        protocol: "https"
+        "description": "ACME Corp. repository",
+        "enabled": false
     }
 
 Réponse :
 
     HTTP/1.1 200 OK
     {
-        success: true,
-        data: {
-            uri: "/api/v1/repositories/foo",
-            id: "foo",
-            description: "Secure ACME Corp. repository",
-            protocol: "https",
+        "success": true,
+        "data": {
+            "uri": "/api/v1/repositories/foo",
+            "id": "foo",
+            "description": "ACME Corp. repository",
+            "enabled": false,
             ...
         }
     }
+
+#### DELETE
 
 * Requête suppression dépôt :
 
@@ -611,740 +584,258 @@ Réponse :
 
     HTTP/1.1 200 OK
     {
-        success: true
-    }
-
-### (OLD) repositories/{repoId}/modules
-
-|  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
-| ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
-| GET    | **/api/v1/repositories/{repoId}/modules**                            |                | Liste des modules du dépôt                                           |
-| PUT    |                                                                      |                | -                                                                    |
-| POST   |                                                                      |                | -                                                                    |
-| DELETE |                                                                      |                | -                                                                    |
-
-L'identifiant `id` du module est la valeur de la propriété `src` de l'index du
-dépôt : la propriété `src` est la clef unique qui permet de référencer de
-manière non ambigüe un module dans le dépôt (puisque c'est ce `src` qui est
-utilisé pour télécharger le module).
-
-* Liste des modules du dépôt :
-
-    GET /api/v1/repositories/foo/modules
-
-Réponse :
-
-    HTTP/1.1 200 OK
-    {
-        success: true,
-        data: [
-            {
-                uri: "/api/v1/repositories/foo/modules/dynacase-core-3.2.0-1.webinst",
-                id: "dynacase-core-3.2.0-1.webinst",
-                name: "dynacase-core",
-                version: "3.2.0",
-                release: "1",
-                ...
-            },
-            {
-                uri: "/api/v1/repositories/foo/modules/my-module.webinst",
-                id: "my-module.webinst",
-                name: "my-module",
-                version: "1.0.0",
-                release: "42",
-                ...
-            },
-            ...
-        ]
-    }
-
-### (OLD) repositories/{repoId}/modules/{moduleSrc}
-
-|  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
-| ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
-| GET    | **/api/v1/repositories/{repoId}/modules/{moduleSrc}**                |                | Détails du paquet sur ce dépôt                                       |
-| PUT    |                                                                      |                | -                                                                    |
-| POST   |                                                                      |                | -                                                                    |
-| DELETE |                                                                      |                | -                                                                    |
-
-* Détail du module :
-
-    GET /api/v1/repositories/foo/modules/my-module.webinst
-
-Réponse :
-
-    HTTP/1.1 200 OK
-    {
-        succcess: true,
-        data: {
-            uri: "/api/v1/repositories/foo/modules/my-module.webinst",
-            id: "my-module.webinst",
-            name: "my-module",
-            version: "1.0.0",
-            release: "42",
-            ...
-        }
+        "success": true
     }
 
 ### context
 
 |  Type  |                                 URL                                |    Implanté    |                            Signification                             |
 | ------ | ------------------------------------------------------------------ | -------------- | -------------------------------------------------------------------- |
-| GET    | */api/v1/context*                                                  |                | Informations du contexte                                             |
-| PUT    |                                                                    |                | -                                                                    |
-| POST   | */api/v1/context*                                                  |                | Modifier des propriétés du contexte                                  |
-| DELETE | */api/v1/context*                                                  |                | Supprimer le contexte                                                |
+| GET    | **/api/v1/context**                                                | 100%           | Informations du contexte s'il existe                                 |
+| PUT    | **/api/v1/context**                                                | 0%             | Modifier les propriétés du contexte                                  |
+| POST   | **/api/v1/context**                                                | 0%             | Créer un contexte                                                    |
+| DELETE | **/api/v1/context**                                                | 0%             | Supprimer le contexte                                                |
 
-* Lister les contextes :
+#### GET
+
+* Propriétés du contexte :
 
     GET /api/v1/context
 
-Réponse :
+Réponse lorsqu'un contexte n'a pas encore été créé :
+
+    HTTP/1.1 404 Not found
+    {
+        "success": false
+    }
+
+Réponse lorsqu'un contexte existe ;
 
     HTTP/1.1 200 OK
     {
-        success: true,
-        data: {
-            uri: "/api/v1/context",
-            id: "production",
-            root: "/var/www/production",
-            url: "https://prod.example.net/",
-            register: "unregistered"
+        "success": true,
+        "data": {
+            "uri": "/api/v1/context",
+            "id": "production",
+            "root": "/var/www/production",
+            "url": "https://prod.example.net/"
         }
     }
 
-* Créer un nouveau contexte vierge :
-
-    POST /api/v1/contexts/
-    {
-        context: {
-            id: "pre-production",
-            root: "/var/www/pre-production"
-        }
-    }
-
-Réponse :
-
-    HTTP/1.1 200 OK
-    {
-        success: true,
-        data: {
-            context: {
-                uri: "/api/v1/contexts/pre-production",
-                id: "pre-production",
-                root: "/var/www/pre-production"
-            }
-        }
-    }
+#### PUT
 
 * Modifier les propriétés du contexte :
 
-    PUT /api/v1/contexts/production
+    PUT /api/v1/context
     {
-        context: {
-            description: "ACME Corp. production site",
-            register: true
-        }
+        "description": "ACME Corp. production site",
     }
 
 Réponse :
 
     HTTP/1.1 200 OK
     {
-        success: true,
-        data: {
-            context: {
-                uri: "/api/v1/contexts/production",
-                id: "production",
-                root: "/var/www/production",
-                description: "ACME Corp. production site"
-                url: "http://prod.example.net",
-                register: true
-            }
+        "success": true,
+        "data": {
+            "uri": "/api/v1/context",
+            "id": "production",
+            "root": "/var/www/production",
+            "description": "ACME Corp. production site"
+            "url": "http://prod.example.net"
         }
     }
 
-* Supprimer un contexte :
+#### POST
 
-    DELETE /api/v1/contexts/production
+* Créer un contexte :
 
-Réponse
-
-    HTTP/1.1 200 OK
+    POST /api/v1/context
     {
-        success: true
-    }
-
-### (OLD) context/repositoryLinks/
-
-|  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
-| ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
-| GET    | */api/v1/contexts/{contextId}/repositoryLinks/*                      |                | Liste des dépôts actifs sur le contexte                              |
-| PUT    |                                                                      |                | -                                                                    |
-| POST   |                                                                      |                | Lier un dépôt au contexte                                            |
-| DELETE |                                                                      |                | -                                                                    |
-
-* Lister les dépôts actifs sur le contexte :
-
-    GET /api/v1/contexts/pre-production/repositoryLinks/
-
-Réponse :
-
-    HTTP/1.1 200 OK
-    {
-        success: true,
-        data: {
-            repositoryLinks: [
-                {
-                    uri: "/api/v1/repositories/local",
-                    id: "local",
-                    description: "Local repo",
-                    protocol: "file",
-                    ...
-                },
-                {
-                    uri: "/api/v1/repositories/foo",
-                    id: "foo",
-                    description: "ACME Corp. repository",
-                    protocol: "http",
-                    ...
-                }
-            ]
-        }
-    }
-
-* Lier un dépôt au contexte :
-
-    POST /api/v1/contexts/{contextId}/repositoryLinks/
-    {
-        repositoryLink: {
-            id: "foo"
-        }
+        "id": "production",
+        "root": "/var/www/production"
     }
 
 Réponse :
 
     HTTP/1.1 200 OK
     {
-        success: true,
-        data: {
-            repository: [
-                {
-                    uri: "/api/v1/repositories/foo",
-                    id: "foo",
-                    description: "ACME Corp. repository",
-                    protocol: "http",
-                    ...
-                },
-                ...
-            ]
+        "success": true,
+        "data": {
+            "uri": "/api/v1/context",
+            "id": "production",
+            "root": "/var/www/production"
         }
     }
 
-### (OLD) repositoryLinks/{repoId}
+Réponse si un context existe déjà :
 
-|  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
-| ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
-| GET    | **/api/v1/repositoryLinks/{repoId}**                                 |                | Récupérer les propriétés du dépôt de paquets lié sur le contexte     |
-| PUT    |                                                                      |                | -                                                                    |
-| POST   |                                                                      |                | -                                                                    |
-| DELETE |                                                                      |                | Dé-lier un dépôt du contexte                                         |
+    HTTP/1.1 409 Conflict
 
-* Voir si le dépôt est actif pour ce contexte :
+#### DELETE
 
-    GET /api/v1/contexts/pre-production/repositoryLinks/foo
+* Supprimer le contexte :
+
+    DELETE /api/v1/context
 
 Réponse :
 
     HTTP/1.1 200 OK
     {
-        success: true,
-        data: {
-            repositoryLink: {
-                uri: "/api/v1/repositories/foo",
-                id: "foo",
-                description: "ACME Corp. repository",
-                protocol: "http",
-                ...
-            }
-        }
-    }
-
-Réponse si le dépôt n'est pas lié sur le contexte :
-
-    HTTP/1.1 404 Not found
-    {
-        success: false,
-        error: "The repository 'foo' is not linked in context 'pre-production'."
-    }
-
-* Dé-lier un dépôt du contexte :
-
-    DELETE /api/v1/contexts/pre-production/repositoryLinks/foo
-
-Réponse : 
-
-    HTTP/1.1 200 OK
-    {
-        success: true
-    }
-
-Réponse si le dépôt n'est pas lié sur le contexte :
-
-    HTTP/1.1 404 Not found
-    {
-        success: false,
-        error: "The repository 'foo' is not linked in context 'pre-production'."
+        "success": true,
     }
 
 ### (DRAFT) modules/
 
 |  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
 | ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
-| GET    | */api/v1//modules/*                                                  |                | Liste des modules installés/disponibles/upgradables sur le contexte  |
-| PUT    |                                                                      |                | -                                                                    |
-| POST   |                                                                      |                | Uploader un module et l'installer/upgrader dans le contexte          |
+| GET    | **/api/v1/modules/**                                                 | 100%           | Liste des modules installés/disponibles/upgradables sur le contexte  |
+| PUT    |                                                                      | 20%            | Installer ou mettre à jour un module                                 |
+| POST   |                                                                      | 0%             | Uploader un module et l'installer/upgrader dans le contexte          |
 | DELETE |                                                                      |                | -                                                                    |
 
-Les modules installés ont un identifiant généré de la forme :
+#### GET
 
-    [php]
-    urlencode( ${moduleName} )
+* Lister tous les modules installés dans le contexte :
 
-(`{moduleName}` est unique dans les modules installés du contexte.)
-
-Les modules disponibles ont un identifiant généré de la forme :
-
-    [php]
-    urlencode( ${repositoryId} . "/" . ${moduleSrc} )
-
-(`{moduleSrc}` est unique dans le dépôt `{repositoryId}`.)
-
-Les modules installés comportent la propriété `status` avec la valeur
-`installed`.
-
-Les modules disponibles sur les dépôts portent une propriété `repository`
-contenant l'identifiant du dépôt d'où ils proviennent.
-
-* Lister tous les modules :
-
-    GET /api/v1/modules/
+    GET /api/v1/modules/?status=installed
 
 Réponse :
 
     HTTP/1.1 200 OK
     {
-        success: true,
-        data: [
+        "success": true,
+        "data": [
             {
-                uri: "/api/v1/modules/dynacase-core",
-                id: "dynacase-core",
-                version: "3.2.18",
-                release: "0.20141127.174457",
-                status: "installed",
-                repository: {
-                    uri: "/api/v1/repositories/dynacase"
-                    id: "dynacase",
-                    description: "Dynacase"
-                }
+                "id": "dynacase-core",
+                "version": "3.2.18",
+                "release": "0.20141127.174457",
+                "status": "installed",
                 ...
-                updatedBy: [
-                    {
-                        uri: "/api/v1/repositories/local/dynacase-core",
-                        id: "dynacase-core",
-                        version: "3.2.18",
-                        release: "0.20150112.123456"
-                    }
-                ],
-                replacedBy: [
-                    {
-                        uri: "/api/v1/repositories/foo/dynacase-foo",
-                        id: "dynacase-foo",
-                        version: "1.0.0",
-                        release: "0",
-                    }
-                ]
-            }
-            ...
-            {
-                uri: "/api/v1/repositories/local/modules/my-module-1.0.0-0.webinst",
-                id: "my-module"
-                version: "1.0.0",
-                release: "0",
-                ...
-                repository: {
-                    uri: "/api/v1/repositories/local"
-                    id: "local",
-                    description: "Local development repository"
-                }
-            }
-        ]
-    }
-
-* Rechercher la dernière version d'un module :
-
-    GET /api/v1/contexts/pre-production/modules/
-    {
-       name: "dynacase-core",
-       latest: true
-    }
-
-Réponse :
-
-    HTTTP/1.1 200 OK
-    {
-        success: true,
-        data: [
-            {
-                uri: "/api/v1/repositories/anakeen/modules/dynacase-core-3.2.19-1.webinst",
-                id: "anakeen/dynacase-core-3.2.19-1.webinst",
-                name: "dynacase-core",
-                version: "3.2.19",
-                release: "1",
-                ...
-            }
-        ]
-    }
-
-Le résultat peut être un module avec un autre nom mais qui remplace le module
-recherché.
-
-* Installer le module "my-module" :
-
-Installe un module nommé "my-module" (celui qui a la version la plus haute) :
-
-    POST /api/v1/contexts/pre-production/modules/
-    {
-        install: [
-            {
-                name: "my-module"
-            }
-        ]
-    }
-
-Installer un module spécifique `{repo, nom, version, release}` :
-
-    POST /api/v1/contexts/pre-production/modules/
-    {
-        install: [
-            {
-                id: "local/my-module-1.0.0-0.webinst"
-            }
-        ]
-    }
-
-Réponse :
-
-    HTTP/1.1 200 OK
-    {
-        success: true,
-        data: {
-            transaction: {
-                uri: "/api/v1/transactions/548bd75c-7e5d-4f8c-9f3d-cb0286a42224",
-                id: "548bd75c-7e5d-4f8c-9f3d-cb0286a42224"
-            }
-        }
-    }
-
-* Mettre à jour "dynacase-core" :
-
-    POST /api/v1/contexts/pre-production/modules/
-    {
-        install: [
-            {
-                name: "dynacase-core"
-            }
-        ]
-    }
-
-On utilise le verbe "install" pour gérer les install et les mises à jour. Comme
-pour dpkg, l'upgrade ou l'install sera faite suivant que le module est installé
-ou non.
-
-Réponse :
-
-    HTTP/1.1 200 OK
-    {
-        success: true,
-        data: {
-            transaction: {
-                uri: "/api/v1/transactions/1608e06a-4c32-4bd1-ad90-080f05dc73fa",
-                id: "1608e06a-4c32-4bd1-ad90-080f05dc73fa"
-            }
-        }
-    }
-
-* Uploader un paquet au format webinst (`my-module.webinst`) et l'installer :
-
-    POST /api/v1/contexts/pre-production/modules/
-    Content-Type: multipart/form-data; boundary=AaB03x
-    
-    --AaB03x
-    Content-Disposition: form-data; name="package"; filename="my-module.webinst"
-    
-    ... binary content ...
-    --AaB03x
-
-Réponse :
-
-    HTTP/1.1 200 OK
-    {
-        success: true,
-        data: {
-            transaction: {
-                uri: "/api/v1/transactions/58cef40d-a677-40d9-9491-7713f9f78184",
-                id: "58cef40d-a677-40d9-9491-7713f9f78184"
-            }
-        }
-    }
-
-Le système détecte automatiquement si le module contenu dans le paquet uploadé
-est déjà installé et fera alors une mise à jour, sinon il fera une
-installation.
-
-* Options pour moduler l'install :
-
-    nopre:   false|true
-    nopost:  false|true
-    nothing: false|true
-    force:   false|true
-
-### contexts/{contextId}/modules/{moduleName}
-
-|  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
-| ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
-| GET    | */api/v1/contexts/{contextId}/modules/{moduleName}*                  |                | Récupérer les infos du module installé                               |
-| PUT    |                                                                      |                | -                                                                    |
-| POST   |                                                                      |                | -                                                                    |
-| DELETE |                                                                      |                | -                                                                    |
-
-* Infos :
-
-    GET /api/v1/contexts/pre-production/modules/my-module
-
-Résponse :
-
-    HTTP/1.1 200 OK
-    {
-        success: true,
-
-        data: {
-            uri: "/api/v1/contexts/pre-production/modules/my-module",
-            id: "my-module"
-            name: "my-module",
-            version: "1.0.0",
-            release: "0",
-            name: "my-module",
-            version: "1.0.0",
-            release: "0",
-            ...,
-            repository: {
-                id: "local",
-                uri: "/api/v1/repositories/local"
-            }
-        }
-    }
-
-### contexts/{contextId}/modules/{moduleName}/parameters/
-
-|  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
-| ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
-| GET    | */api/v1/contexts/{contextId}/modules/{moduleName}/parameters/*      |                | Liste des paramètres du module installé                              |
-| PUT    |                                                                      |                | -                                                                    |
-| POST   |                                                                      |                | -                                                                    |
-| DELETE |                                                                      |                | -                                                                    |
-
-* Lister les paramètre d'un module installé :
-
-    GET /api/v1/contexts/production/modules/dynacase-core/parameters/
-
-Réponse :
-
-    HTTP/1.1 200 OK
-    {
-        parameters: [
-            {
-                uri: "/api/v1/contexts/production/modules/dynacase-core/core_db",
-                id: "core_db",
-                value: "pg-production"
             },
             ...
         ]
     }
 
-### contexts/{contextId}/modules/{moduleName}/parameters/{paramId}
+* Lister tous les modules disponibles :
 
-|  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
-| ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
-| GET    | **/api/v1/contexts/{contextId}/modules/{moduleName}/parameters/{paramId}** |          | Valeur du paramètre du module installé                               |
-| PUT    |                                                                      |                | -                                                                    |
-| POST   |                                                                      |                | Modifier la valeur du paramètre du module installé                   |
-| DELETE |                                                                      |                | -                                                                    |
+    GET /api/v1/modules/?status=available
 
-* Get :
-
-    GET /api/v1/contexts/production/modules/dynacase-core/core_db
-
+Liste tous tous les modules des dépôt marqués {`enabled`: true} en ne prenant
+que la dernière version des modules s'il y des doublons.
 
 Réponse :
 
     HTTP/1.1 200 OK
     {
-        parameter: {
-            uri: "/api/v1/contexts/production/modules/dynacse-core/core_db",
-            id: "core_db",
-            value: "pg-production"
-        }
-    }
-
-* Modify :
-
-    PUT /api/v1/contexts/production/modules/dynacase-core/core_db
-    {
-        value: "pg-production-bis"
-    }
-
-Réponse :
-
-    HTTP/1.1 409 Conflict
-    {
-        success: false,
-        error: "Parameter 'core_db' can't be changed."
-    }
-
-Actuellement, les paramètres ne sont pas modifiables.
-
-### archives/
-
-|  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
-| ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
-| GET    | */api/v1/archives*                                                   |                | Liste des archives                                                   |
-| PUT    |                                                                      |                | -                                                                    |
-| POST   |                                                                      |                | Uploader un fichier d'archive OU archiver un contexte existant       |
-| DELETE |                                                                      |                | -                                                                    |
-
-* Liste des archives :
-
-    GET /api/v1/archives/
-
-Réponse :
-
-    HTTP/1.1 200 OK
-    {
-        archives: [
+        "success": true,
+        "data": [
             {
-                uri: "/api/v1/archives/test-833cc0ab-75f2-42c8-a39f-86a78875d2e9",
-                id: "test-833cc0ab-75f2-42c8-a39f-86a78875d2e9",
-                name: "test"
-            },
-            ...
+                "id": "foo",
+                "version: "1.0.0",
+                "release": "1",
+                ...
+            }
         ]
     }
 
-* Uploader une archive :
+* Lister les modules installés ayant une mise à jour de disponible :
 
-    POST /api/v1/archives/
-    Content-Type: multipart/form-data; boundary=AaB03x
-    
-    --AaB03x
-    Content-Disposition: form-data; name="archive"; filename="xxx.fcz"
-    
-    ... binary content ...
-    --AaB03x
+    GET /api/v1/modules/?status=upgradable
 
 Réponse :
 
     HTTP/1.1 200 OK
     {
-        success: true
+        "success": true,
+        "data": [
+            {
+                "id": "dynacase-core",
+                "version": "3.2.23",
+                "release": "0",
+                ...
+            }
+        ]
     }
 
-* Archivage d'un contexte existant :
+#### PUT
 
-    POST /api/v1/archives/
+* Installer ou mettre à jour des modules :
+
+    PUT /api/v1/modules/
     {
-        context: "pre-production",
-        excludeVault: true|false,
-        description: "Archive avant mise à jour de la pre-prod."
+        "install": [
+            "dynacase-core",
+            "foo",
+            "bar"
+        ]
     }
 
-### archives/{archiveId}
-|  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
-| ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
-| GET    | **/api/v1/archives/{archiveId}**                                     |                | Voir les informations de l'archive OU télécharger l'archive          |
-| PUT    |                                                                      |                | -                                                                    |
-| POST   |                                                                      |                | -                                                                    |
-| DELETE |                                                                      |                | Supprimer l'archive                                                  |
-
-* Informations de l'archive :
-
-    GET /api/v1/archives/833cc0ab-75f2-42c8-a39f-86a78875d2e9
-
-Réponse
+Réponse :
 
     HTTP/1.1 200 OK
     {
-        archive: {
-            uri: "/api/v1/archives/test-833cc0ab-75f2-42c8-a39f-86a78875d2e9",
-            id: "test-833cc0ab-75f2-42c8-a39f-86a78875d2e9",,
-            date: "2014-12-15 09:03:04",
-            name: "test",
-            size: 42131432,
-            vault: true,
-            description: "Archive de test",
-            modules: [
+        "success": true,
+        "data": {
+            "transaction": "/api/v1/transactions/123",
+            "summary": [
                 {
-                    name: "dynacase-core",
-                    version: "3.2.17",
-                    release: "1"
+                    "name": "dynacase-core",
+                    ...
+                    "operation": "install"
                 },
-                ...
-            ]
+                {
+                    "name": "foo",
+                    ...
+                    "operation": "upgrade"
+                },
+                {
+                    "name": "bar",
+                    ...
+                    "operation": "replaced",
+                    "replacedBy": "bar-new"
+                },
+                {
+                    "name": "bar-new",
+                    ...,
+                    "operation": "install"
+                }
+            ],
         }
     }
 
-* Supprimer une archive :
+Le résumé de ce qui sera fait est retourné dans "summary".
 
-    DELETE /api/v1/archives/test-833cc0ab-75f2-42c8-a39f-86a78875d2e9
+- Si le client décide de poursuivre, alors il exécute la transaction planifiée.
+- Sinon, il supprime la transaction planifiée.
+
+Réponse en cas d'erreur (dépendances incorrectes, etc.) :
+
+    HTTP/1.1 400 Error
+    {
+        "success": false,
+        "error": "Module 'baz' required by module 'bar' not found"
+    }
+
+#### POST
+
+* Uploader et installer un module :
+
+    POST /api/v1/modules/
+    Content-Length: xxx
+    
+    <raw-webinst-file-content>
 
 Réponse :
 
     HTTP/1.1 200 OK
     {
-        success: true
+        "success": true,
+        "data": {
+            "transaction": "/api/v1/transactions/123"
+        }
     }
 
-### logs/
-
-|  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
-| ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
-| GET    | */api/v1/logs*                                                       |                | Liste des fichiers de log disponibles                                |
-| PUT    |                                                                      |                | -                                                                    |
-| POST   |                                                                      |                | -                                                                    |
-| DELETE |                                                                      |                | -                                                                    |
-
-### logs/{logId}
-
-|  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
-| ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
-| GET    | **/api/v1/logs/{logId}**                                             |                | Récupérer ou streamer le fichier de log                              |
-| PUT    |                                                                      |                | -                                                                    |
-| POST   |                                                                      |                | Ajouter une entrée dans le fichier de log                            |
-| DELETE |                                                                      |                | Vider le fichier de log                                              |
-
-* Ajouter une (ou plusieurs) entrée(s) dans le fichier de log :
-
-    POST /api/v1/logs/wiff.log
-    {
-        log: [
-            "Hello from REST client!",
-            "Goodbye from REST client."
-        ]
-    }
-
-### transactions/
-
-Une transaction est globale ? Ou par contexte ?
+### (DRAFT) transactions/
 
 |  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
 | ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
@@ -1372,34 +863,87 @@ Réponse :
         ]
     }
 
-### transactions/{xactId}
+Normalent il ne devrait y avoir qu'une seule transaction.
+
+### (DRAFT) transactions/{xactId}
 
 |  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
 | ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
 | GET    | **/api/v1/transactions/{xactId}**                                    |                | Obtenir les détails de la transaction globale {xactId}               |
 | PUT    |                                                                      |                | -                                                                    |
-| POST   |                                                                      |                | Démarre la transaction                                               |
-| DELETE |                                                                      |                | Nettoyer ou avorter la transaction                                   |
+| POST   | **/api/v1/transactions/{xactId}**                                    |                | Démarre la transaction                                               |
+| DELETE | **/api/v1/transactions/{xactId}**                                    |                | Nettoyer ou avorter la transaction                                   |
 
-États de la transaction :
+Modèle :
 
-    {status: "ready", currentOperation: ""}  /* État initial */
-        |
-        |
-        v
-    {status: "running", currentOperation: 1} /* État démarré : exécute les opérations */
-        |
-        |
-        v
-    {status: "running", currentOperation: 2}
-        .
-        .
-        .
-    {status: "running", currentOperation: N}
-        |
-        |
-        v
-    {status: "end", currentOperation: ""}    /* État terminé */
+* Une `Transaction` contient des `Operations`.
+* La `Transaction` est traitée par un `TransactionProcessor` (processeur).
+
+Commandes du processeur :
+
+* `run` : exécute toutes les opérations jusq'à la fin ou jusqu'à l'occurence
+  d'une erreur.
+
+* `next` : exécute une opération et se met en erreur ou en pause.
+
+* `skip` : ignore l'opération courante et exécute l'opération suivante.
+
+* `retry` : rejoue l'opération courante.
+
+* `abort` : interrompt l'opération courante.
+
+États du processeur :
+
+* `ready` : état initial du processeur.
+
+* `licenses` : toutes les licences doivent être acceptées. Tant que toutes les
+  licenses ne sont pas {accept: true}, on ne peut pas passer à une autre
+  opération.
+
+* `parameters` : les valeurs des paramètres des modules doivent être définies.
+
+* `end` : fin des opérations.
+
+* `error` : erreur rencontrée lors de l'exécution d'une opération.
+
+* `running` : une opération est en cours d'exécution.
+
+* `pause` : le processeur est en attente d'une commande pour continuer son
+  exécution.
+
+
+
+    "ready" --> "licenses" -> "parameters" --> "end"
+                                           --> "error"
+                                           --> "running"
+                                           --> "pause"
+            --> "running" --> "end"
+                          --> "error"
+                          --> "pause"
+            --> "error" --> "running"
+            --> "pause" --> "running"
+            --> "end"
+
+
+
+Type d'opérations :
+
+`h1`..`h6`
+:   Élément de présentation représentant une section, un commentaire,
+    une information pour délimiter les opérations, etc.
+
+    "h1": {
+        "label": "Label de la section"
+    }
+
+`task`
+:   Élément représentant une tâche a exécuter.
+
+    "task": {
+        "label": "Label de description de l'opération"
+    }    
+
+
 
 * Obtenir le détail d'une transaction
 
@@ -1409,12 +953,41 @@ Réponse :
 
     HTTP/1.1 200 OK
     {
-        success: true,
-        data: {
-            uri: "/api/v1/transactions/123",
-            id: 123,
-            status: "ready",
-            currentOperation: 3,
+        "success": true,
+        "data": {
+            "uri": "/api/v1/transactions/123",
+            "id": 123,
+            "status": "ready",
+            "currentOperation": 0,
+            "module-licenses": [
+                {
+                    "module": "acme-foo",
+                    "license": "ACME Public License",
+                    ...
+                    "accept": false
+                },
+                ...
+            ],
+            "module-parameters": [
+                {
+                    "module": "dynacase-core",
+                    "parameters": [
+                        {
+                            "uri": "/api/v1/transactions/123/module-parameters/dynacase-core/core_admin_passwd",
+                            "id": "core_admin_passwd",
+                            "label": "Admin password,
+                            "default": "anakeen",
+                            "type": "text",
+                            "volatile": "yes",
+                            "oninstall": "W",
+                            "onpugrade": "H",
+                            "onedit": "H"
+                        },
+                        ...
+                    ]
+                },
+                ...
+            ],
             operations: [
                 {
                     uri: "/api/v1/transactions/123/operations/1",
@@ -1423,7 +996,7 @@ Réponse :
                     type: "h1",
                     h1: {
                         label: "Installation of 'my-module'",
-                        }
+                    }
                 },
                 {
                     uri: ".../2",
@@ -1432,7 +1005,7 @@ Réponse :
                     type: "h2",
                     h2: {
                         label: "Runnig pre-install...",
-                        }
+                    }
                 },
                 {
                     uri: ".../3",
@@ -1441,7 +1014,7 @@ Réponse :
                     type: "task",
                     task: {
                         label: "Checking for Foo",
-                        }
+                    }
                 },
                 {
                     uri: ".../4",
@@ -1451,7 +1024,7 @@ Réponse :
                     task: {
                         label: "Checking for Bar",
                         optional: true,
-                        }
+                    }
                 },
                 {
                     uri: ".../5",
@@ -1460,7 +1033,7 @@ Réponse :
                     type: "h2",
                     h2: {
                         label: "Extracting files...",
-                        }
+                    }
                 },
                 {
                     uri: ".../6",
@@ -1469,7 +1042,7 @@ Réponse :
                     type: "task",
                     task: {
                         label: "Extracting files",
-                        }
+                    }
                 },
                 {
                     uri: ".../7",
@@ -1478,7 +1051,7 @@ Réponse :
                     type: "h2",
                     h2: {
                         label: "Running post-install...",
-                        }
+                    }
                 },
                 {
                     uri: ".../8",
@@ -1487,279 +1060,191 @@ Réponse :
                     type: "task",
                     task: {
                         label: "Registering application MY_APP",
-                        }
+                    }
                 }
-            }
+            ]
         }
     }
 
-* Attendre que la transasction se termine ou qu'une opération soit en échec :
+* Lance l'exécution automatique de la transaction :
 
-    GET /api/v1/transactions/123?wait
+    POST /api/v1/transactions/123?run
+
+Réponse lorsque toute la transaction est terminée :
+
+    HTTP/1.1 200 OK
+    {
+        "success": true,
+        "data": {
+            "uri": "/api/v1/transactions/123",
+            "id": 123,
+            "status": "end",
+            "currentOperation": 10,
+            ...
+        }
+    }
+
+La transaction s'est terminée sans erreur sur la dernière opération #10.
+
+Réponse lorsqu'une erreur est rencontrée :
+
+    HTTP/1.1 200 OK
+    {
+        "success": true,
+        "data": {
+            "uri": "/api/v1/transactions/123",
+            "id": 123,
+            "status": "error",
+            "currentOperation": 5,
+            ...
+        }
+    }
+
+Une erreur a été rencontrée lors de l'exécution de l'opération #5.
+
+Réponse lorsque des paramètres sont requis :
+
+    HTTP/1.1 200 OK
+    {
+        "success": true,
+        "data": {
+            "uri": "/api/v1/transactions/123",
+            "id": "123",
+            "status": "parameters",
+            "currentOperation": 0,
+            ...
+        }
+    }
+
+* Lance l'exécution pas-à-pas de la transaction :
+
+    POST /api/v1/transactions/123?next
 
 Réponse :
 
-    ... wait for end-of-transaction or failed operation ...
     HTTP/1.1 200 OK
     {
-        success: true,
-        data: {
-            ... transaction object ...
+        "success": true,
+        "data": {
+            "uri": "/api/v1/transactions/123",
+            "id": "123",
+            "status": "parameters",
+            "currentOperation": 0,
+            ...
         }
     }
 
-* Démarre la transaction :
+* Rejouer l'opération courante :
 
     POST /api/v1/transactions/123
-
-Réponse :
-
-    HTTP/1.1 200 OK
     {
-        success: true,
-        data: {
-            uri: "/api/v1/transactions/123/operations/1",
-            id: 1,
-            type: "h1",
-            status: "OK",
-            next: "/api/v1/transactions/123/operations/2"
-            h1: {
-                label: "Installation of 'my-module'"
-            }
-        }
+        "retry": 5
     }
+
+Demande que l'opération courante #5 soit rejouée.
+
+Possible seulement lorsque le processeur n'est pas dans l'état "running".
+
+* Ignorer l'opération courante :
+
+    POST /api/v1/transactions/123
+    {
+        "skip": 5
+    }
+
+Demande que l'opération courante #5 soit ignorée.
+
+Possible seulement lorsque le processeur n'est pas dans l'état "running".
+
+* Interrompte une opération :
+
+    POST /api/v1/transactions/123
+    {
+        "abort": 5
+    }
+
+Demande l'arrêt de l'opération courante #5.
+
+Possible seulement lorsque le processeur est dans l'état "running".
 
 * Nettoyer une transaction terminée :
 
     DELETE /api/v1/transactions/123
 
-Réponse si la transaction s'est naturellement terminée (`status=end` et
-`currentOperation=end`) :
+Réponse si la transaction s'est naturellement terminée {"status": end} :
 
     HTTP/1.1 200 OK
     {
-        success: true
+        "success": true
     }
 
 Réponse si la transaction n'est pas terminée :
 
     HTTP/1.1 409 Conflict
     {
-        success: false,
-        error: "The transaction is still running."
+        "success": false,
+        "error": "The transaction is still running."
     }
 
 * Avorter une transaction non-terminée :
 
-    DELETE /api/v1/transaction/123?abort
+    DELETE /api/v1/transaction/123
+    {
+        "abort": true
+    }
 
 Réponse :
 
     HTTP/1.1 200 OK
     {
-        success: true,
+        "success": true,
+        "data": {
+            ...
+        }
     }
 
 Tuer les opérations qui tournent et supprimer la transaction.
 
-### transactions/{xactId}/operations/
+### (DRAFT) transactions/{xactId}/module-parameters/{moduleId}/{paramName}
 
-|  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
-| ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
-| GET    | **/api/v1/transactions/{xactId}/operations/**                        |                | Liste des opération de la transasction                               |
-| PUT    |                                                                      |                | -                                                                    |
-| POST   |                                                                      |                | -                                                                    |
-| DELETE |                                                                      |                | -                                                                    |
+|  Type  |                                 URL                                        |    Implanté    |                            Signification                             |
+| ------ | -------------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
+| GET    |                                                                            |                | -                                                                    |
+| PUT    | **/api/v1/transactions/{xactId}/module-parameters/{moduleId}/{paramName}** |                | Définir la valeur du paramètre                                       |
+| POST   |                                                                            |                | -                                                                    |
+| DELETE |                                                                            |                | -                                                                    |
 
-* Liste des opérations de la transaction :
+#### PUT
 
-    GET /api/v1/transactions/123/operations/
-
-Réponse :
-
-    HTTP/1.1 200 OK
+    PUT /api/v1/transactions/123/module-parameters/dynacase-core/core_admin_passwd
     {
-        success: true,
-        data: [
-            {
-                uri: "/api/v1/transactions/123/operations/1",
-                id: 1,
-                status: "OK",
-                type: "h1",
-                h1: {
-                    label: "Installation of 'my-module'",
-                    }
-            },
-            {
-                uri: ".../2",
-                id: 2,
-                status: "OK",
-                type: "h2",
-                h2: {
-                    label: "Runnig pre-install..."
-                    }
-            },
-            {
-                uri: ".../3",
-                id: 3,
-                status: "OK",
-                type: "task",
-                task: {
-                    label: "Checking for Foo",
-                    }
-            },
-            {
-                uri: ".../4",
-                id: 4,
-                status: "KO",
-                type: "task",
-                task: {
-                    label: "Checking for Bar",
-                    optional: true,
-                    }
-            },
-            {
-                uri: ".../5",
-                id: 5,
-                status: "",
-                type: "h2",
-                h2: {
-                    label: "Extracting files...",
-                    }
-            },
-            {
-                uri: ".../6",
-                id: 6,
-                status: "",
-                type: "task",
-                task: {
-                    label: "Extracting files",
-                    }
-            },
-            {
-                uri: ".../7",
-                id: 7,
-                status: "",
-                type: "h2",
-                h2: {
-                    label: "Running post-install...",
-                    }
-            },
-            {
-                uri: ".../8",
-                id: 8,
-                status: "",
-                type: "task",
-                task: {
-                    label: "Registering application MY_APP"
-                    }
-            }
-        ]
+        "value": "secret"
+    }
+
+### (DRAFT) transactions/{xactId}/module-licenses/{moduleId}
+
+|  Type  |                                 URL                                        |    Implanté    |                            Signification                             |
+| ------ | -------------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
+| GET    |                                                                            |                | -                                                                    |
+| PUT    | **/api/v1/transactions/{xactId}/module-licenses/{moduleId}**               |                | Définir la valeur du paramètre                                       |
+| POST   |                                                                            |                | -                                                                    |
+| DELETE |                                                                            |                | -                                                                    |
+
+#### PUT
+
+    PUT /api/v1/transactions/123/module-licenses/dynacase-core
+    {
+        "accept": true
     }
 
 ### transactions/{xactId}/operations/{opId}
 
 |  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
 | ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
-| GET    | **/api/v1/transactions/{xactId}/operations/{opId}**                  |                | Récupérer les inforrmations de l'opération                           |
+| GET    | **/api/v1/transactions/{xactId}/operations/{opId}**                  |                | Récupérer le détail d'une opération                                  |
 | PUT    |                                                                      |                | -                                                                    |
-| POST   |                                                                      |                | Exécuter l'opération                                                 |
-| DELETE |                                                                      |                | Arrêter l'opération qui tourne                                       |
-
-Type d'opérations :
-
-`h1`..`h6`
-:   Élément représentant une section, un commenntaire, une information pour
-    délimiter les opérations, etc.
-    
-        h1: {
-            label: "Label de la section"
-            }
-     
-    États :
-    
-        {status: ""} --(exec)--> {status: "OK"}
-    
-    Données à soumettre pour l'exécution : aucune donnée à soumettre.
-
-`task`
-:   Élément représentant une tâche a exécuter.
-    
-        task: {
-            label: "Label de description de l'opération"
-            }
-    
-    États :
-    
-        {status: ""} --(exec)--> {status: "OK"}
-        {status: ""} --(exec)--> {status: "KO"}
-        {status: ""} --(exec)--> {status: "running"}
-        
-        {status: "running"} --> {status: "OK"}
-        {status: "running"} --> {status: "KO"}
-        
-        {status: "KO"} --(exec)--> {status: "OK"}
-        {status: "KO"} --(exec)--> {status: "KO"}
-    
-    Données pour l'exécution :
-    
-        {}
-
-`license`
-:   Élément représentant une licence pour laquelle l'utilisateur doit donner
-    son accord.
-    
-        license: {
-            licenseName: "ACME Corp. Public License 1.0"
-            licenseText: "... content in text/plain ..."
-            }
-    
-    États :
-    
-        {status: ""} --(exec)--> {status: "OK"}
-        {status: ""} --(exec)--> {status: "end"}
-    
-    Données à soumettre pour l'exécution :
-   
-        {agree: true|false}
-    
-    Si l'utilisateur refuse la license, alors la transaction passe en status
-    `end`.
-
-`prompt`
-:   Élément pour poser des questions et demander une réponse à l'utilisateur.
-    
-        prompt: [
-            {
-                id: "core_db",
-                label: "Postgresql service name",
-                type: "text",
-                default: "pre-production"
-            },
-            {
-                id: "colour"
-                label: "What is you favorite colour?",
-                type: "enum",
-                values: "Red|Green|Blue"
-            }
-        ]
-    
-    États :
-    
-        {status: ""} --(exec)--> {status: "OK"}
-    
-    Données à soumettre pour l'exécution :
-    
-        [
-            {
-                id: "core_db",
-                value: "pre-production"
-            },
-            {
-                id: "colour",
-                value: "Red"
-            }
-        ]
+| POST   |                                                                      |                | -                                                                    |
+| DELETE |                                                                      |                | -                                                                    |
 
 * Récupérer les infos de l'opération :
 
@@ -1781,7 +1266,7 @@ Réponse :
         }
     }
 
-Réponse si la l'opération est en cours d'exécution :
+Réponse si l'opération est en cours d'exécution :
 
     HTTP/1.1 200 OK
     {
@@ -1937,6 +1422,48 @@ Réponse si l'opération n'est pas en échec ou tourne encore :
         success: false,
         error: "Operation 8 is not in failed state."
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2258,11 +1785,14 @@ l'avancement.
 L'avancement est envoyé sur STDOUT ? ou un fichier spécifique ?
 
     [php]
+    
     if (getenv('PROGRESS_FILE') !== false) {
         progressFile = getenv('PROGRESS_FILE');
     } else {
         progressFile = 'php://stdout';
     }
+    file_put_contents($progressFile, sprintf('PROGRESS-API:VERSION=1'.PHP_EOL, $percent), FILE_APPEND|LOCK_EX);
+    ...
     file_put_contents($progressFile, sprintf('PROGRESS:%d%%'.PHP_EOL, $percent), FILE_APPEND|LOCK_EX);
 
 On peut aussi imaginer un mécanique similaire a cette Progress API pour que la
