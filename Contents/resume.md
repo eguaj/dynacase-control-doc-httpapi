@@ -757,6 +757,52 @@ Réponse :
         ]
     }
 
+* Liste « synthétique » des modules :
+
+    GET /api/v1/modules/
+
+Réponse :
+
+    HTTP/1.1 200 OK
+    {
+        "success": true,
+        "data": [
+            {
+                "id": "dynacase-core",
+                "version": "3.2.23",
+                "release": "0",
+                "status": "installed",
+                "update": {
+                    "name": "dynacase-core",
+                    "version": "3.2.24",
+                    "release": "1"
+                }
+            },
+            ...
+            {
+                "id": "foo",
+                "version": "1.0.0",
+                "release": "0",
+                "status": "installed",
+                "update": null
+            },
+            ...
+            {
+                "id": "bar",
+                "version": "1.0.0",
+                "release": "1",
+                "status": "available",
+                "update": null
+            }
+        ]
+    }
+
+La liste contient dans l'ordre suivant :
+
+- les modules installés ayant une mise à jour ordonnés par le nom ;
+- les modules installés n'ayant pas de mise à jour ordonnés par le nom ;
+- les modules disponibles non-installés ordonnés par le nom.
+
 #### PUT
 
 * Installer ou mettre à jour des modules :
