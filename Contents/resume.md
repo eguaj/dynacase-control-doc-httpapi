@@ -281,7 +281,9 @@ Réponse :
                         "label": "Postgres service name",
                         "description": "",
                         "type": "text",
-                        "value": "dynacase"
+                        "default": "dynacase",
+                        "required": true,
+                        "value": ""
                     },
                     ...
                 ]
@@ -322,7 +324,9 @@ Réponse :
                     "label": "Postgres service name",
                     "description": "",
                     "type": "text",
-                    "value": "dynacase"
+                    "default": "dynacase",
+                    "required": true
+                    "value": "",
                 },
                 ...
             ]
@@ -355,9 +359,35 @@ Réponse :
             "label": "Postgres service name",
             "description": "",
             "type": "text",
-            "value": "dynacase"
+            "default": "dynacase",
+            "required": true,
+            "value": ""
         }
     }
+
+Propriétés :
+
+* `type`: le type de l'attribut.
+  * `text`: texte brut.
+  * `url`: un texte suivant la forme d'une URL (e.g.
+    `<scheme>://<hostname>/<pathname>?<query>`).
+  * `enum(<choice1>|...|<choiceN>)`: une liste de choix possibles séparés par
+    un pipe (`|`).
+  * `integer`: un entier.
+  * `password`: un mot de passe.
+  * autres types à définir au fur et à mesure des besoins...
+* `required`: une valeur est requise. Le client doit obliger l'utilisateur à
+  entrer et sauvegarder une valeur non-vide.
+* `default`: valeur par défaut que le client peut proposer à l'utilisateur.
+* `visibility`: si la propriété est présent et que sa valeur est vaut `expert`,
+  alors cela indique que ce paramètre est du niveau Expert et peut être masqué
+  par défaut et affiché si l'utilisateur indique qu'il souhaite voir aussi les
+  paramètres de niveau Expert.
+
+Notes :
+* Si un paramètre est `required`, alors une valeur non-vide doit être fournie.
+* La valeur `default` proposée par le serveur peut être utilisée par le client
+  comme valeur à sauvegarder si l'utilisateur ne rentre pas de valeur.
 
 #### PUT
 
@@ -379,6 +409,8 @@ Réponse :
             "label": "Postgres service name",
             "description": "",
             "type": "text",
+            "default": "dynacase",
+            "required": true,
             "value": "foo"
         }
     }
