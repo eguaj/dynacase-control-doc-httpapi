@@ -1,0 +1,40 @@
+digraph D {
+	node [
+		fontname="Liberation Sans",
+		color="blue"
+	];
+
+	"initializing" [color="cyan"];
+	"licenses" [color="blue"];
+	"parameters" [color="blue"];
+	"ready" [color="blue"];
+	"running" [color="cyan"];
+	"pause" [color="blue"];
+	"error" [color="red"];
+	"end" [color="green"];
+
+	{
+		edge [color=blue];
+		"initializing" -> "ready";
+
+		"ready" -> "licenses";
+ 		"ready" -> "parameters";
+		"ready" -> "end";
+		"ready" -> "running";
+
+		"licenses" -> "parameters";
+
+		"parameters" -> "end";
+		"parameters" -> "error";
+		"parameters" -> "running";
+		"parameters" -> "pause";
+
+		"running" -> "end";
+		"running" -> "error";
+		"running" -> "pause";
+
+		"error" -> "running";
+
+		"pause" -> "running";
+	}
+}

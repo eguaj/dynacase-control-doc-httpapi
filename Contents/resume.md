@@ -776,37 +776,11 @@ Réponse :
     {
         "success": true,
         "data": {
-            "transaction": "/api/v1/transactions/123",
-            "summary": [
-                {
-                    "name": "dynacase-core",
-                    ...
-                    "operation": "install"
-                },
-                {
-                    "name": "foo",
-                    ...
-                    "operation": "upgrade"
-                },
-                {
-                    "name": "bar",
-                    ...
-                    "operation": "replaced",
-                    "replacedBy": "bar-new"
-                },
-                {
-                    "name": "bar-new",
-                    ...,
-                    "operation": "install"
-                }
-            ],
+            "transaction": "/api/v1/transactions/123"
         }
     }
 
-Le résumé de ce qui sera fait est retourné dans "summary".
-
-- Si le client décide de poursuivre, alors il exécute la transaction planifiée.
-- Sinon, il supprime la transaction planifiée.
+L'URL de la transaction est retournée.
 
 Réponse en cas d'erreur (dépendances incorrectes, etc.) :
 
@@ -835,7 +809,7 @@ Réponse :
         }
     }
 
-### (DRAFT) transactions/
+### transactions/
 
 |  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
 | ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
@@ -863,7 +837,9 @@ Réponse :
         ]
     }
 
-Normalent il ne devrait y avoir qu'une seule transaction.
+Note :
+* Pour le moment, une seule transaction est gérée (transaction avec identifiant
+  `0`). Normalement il ne devrait y avoir qu'une seule transaction.
 
 ### (DRAFT) transactions/{xactId}
 
@@ -884,15 +860,16 @@ Commandes du processeur :
 * `run` : exécute toutes les opérations jusq'à la fin ou jusqu'à l'occurence
   d'une erreur.
 
-* `next` : exécute une opération et se met en erreur ou en pause.
+* `next` : exécute une opération et se met en erreur ou en pause (commande par défaut).
 
 * `skip` : ignore l'opération courante et exécute l'opération suivante.
 
 * `retry` : rejoue l'opération courante.
 
-* `abort` : interrompt l'opération courante.
-
 États du processeur :
+
+* `initializing` : lorsque la transaction est en train d'être créé et avant
+  qu'elle ne soit disponible dans l'état `ready`.
 
 * `ready` : état initial du processeur.
 
@@ -911,20 +888,7 @@ Commandes du processeur :
 * `pause` : le processeur est en attente d'une commande pour continuer son
   exécution.
 
-
-
-    "ready" --> "licenses" -> "parameters" --> "end"
-                                           --> "error"
-                                           --> "running"
-                                           --> "pause"
-            --> "running" --> "end"
-                          --> "error"
-                          --> "pause"
-            --> "error" --> "running"
-            --> "pause" --> "running"
-            --> "end"
-
-
+![Transactions states](transactions-states.png)
 
 Type d'opérations :
 
