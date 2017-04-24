@@ -896,16 +896,8 @@ Type d'opérations :
 :   Élément de présentation représentant une section, un commentaire,
     une information pour délimiter les opérations, etc.
 
-    "h1": {
-        "label": "Label de la section"
-    }
-
 `task`
 :   Élément représentant une tâche a exécuter.
-
-    "task": {
-        "label": "Label de description de l'opération"
-    }    
 
 
 
@@ -958,8 +950,8 @@ Réponse :
                     id: 1,
                     status: "OK",
                     type: "h1",
-                    h1: {
-                        label: "Installation of 'my-module'",
+                    label: "Installation of 'my-module'",
+                    typedData: {
                     }
                 },
                 {
@@ -967,8 +959,8 @@ Réponse :
                     id: 2,
                     status: "OK",
                     type: "h2",
-                    h2: {
-                        label: "Runnig pre-install...",
+                    label: "Runnig pre-install...",
+                    typedData: {
                     }
                 },
                 {
@@ -976,8 +968,8 @@ Réponse :
                     id: 3,
                     status: "running",
                     type: "task",
-                    task: {
-                        label: "Checking for Foo",
+                    label: "Checking for Foo",
+                    typedData: {
                     }
                 },
                 {
@@ -985,9 +977,9 @@ Réponse :
                     id: 4,
                     status: "",
                     type: "task",
-                    task: {
-                        label: "Checking for Bar",
-                        optional: true,
+                    label: "Checking for Bar",
+                    optional: true,
+                    typedData: {
                     }
                 },
                 {
@@ -995,8 +987,8 @@ Réponse :
                     id: 5,
                     status: "",
                     type: "h2",
-                    h2: {
-                        label: "Extracting files...",
+                    label: "Extracting files...",
+                    typedData: {
                     }
                 },
                 {
@@ -1004,8 +996,8 @@ Réponse :
                     id: 6,
                     status: "",
                     type: "task",
-                    task: {
-                        label: "Extracting files",
+                    label: "Extracting files",
+                    typedData: {
                     }
                 },
                 {
@@ -1013,8 +1005,8 @@ Réponse :
                     id: 7,
                     status: "",
                     type: "h2",
-                    h2: {
-                        label: "Running post-install...",
+                    label: "Running post-install...",
+                    typedData: {
                     }
                 },
                 {
@@ -1022,8 +1014,8 @@ Réponse :
                     id: 8,
                     status: "",
                     type: "task",
-                    task: {
-                        label: "Registering application MY_APP",
+                    label: "Registering application MY_APP",
+                    typedData: {
                     }
                 }
             ]
@@ -1100,10 +1092,7 @@ Réponse :
 
 * Rejouer l'opération courante :
 
-    POST /api/v1/transactions/123
-    {
-        "retry": 5
-    }
+    POST /api/v1/transactions/123?retry=yes
 
 Demande que l'opération courante #5 soit rejouée.
 
@@ -1111,10 +1100,7 @@ Possible seulement lorsque le processeur n'est pas dans l'état "running".
 
 * Ignorer l'opération courante :
 
-    POST /api/v1/transactions/123
-    {
-        "skip": 5
-    }
+    POST /api/v1/transactions/123?skip=yes
 
 Demande que l'opération courante #5 soit ignorée.
 
@@ -1122,10 +1108,7 @@ Possible seulement lorsque le processeur n'est pas dans l'état "running".
 
 * Interrompte une opération :
 
-    POST /api/v1/transactions/123
-    {
-        "abort": 5
-    }
+    POST /api/v1/transactions/123?abort=yes
 
 Demande l'arrêt de l'opération courante #5.
 
@@ -1139,7 +1122,10 @@ Réponse si la transaction s'est naturellement terminée {"status": end} :
 
     HTTP/1.1 200 OK
     {
-        "success": true
+        "success": true,
+        "data": {
+            ....
+        }
     }
 
 Réponse si la transaction n'est pas terminée :
@@ -1149,25 +1135,6 @@ Réponse si la transaction n'est pas terminée :
         "success": false,
         "error": "The transaction is still running."
     }
-
-* Avorter une transaction non-terminée :
-
-    DELETE /api/v1/transaction/123
-    {
-        "abort": true
-    }
-
-Réponse :
-
-    HTTP/1.1 200 OK
-    {
-        "success": true,
-        "data": {
-            ...
-        }
-    }
-
-Tuer les opérations qui tournent et supprimer la transaction.
 
 ### (DRAFT) transactions/{xactId}/module-parameters/{moduleId}/{paramName}
 
@@ -1224,8 +1191,8 @@ Réponse :
             id: 8,
             type: "task",
             status: ""
-            task: {
-                label: "Registering application MY_APP"
+            label: "Registering application MY_APP"
+            typedData: {
             }
         }
     }
@@ -1240,153 +1207,13 @@ Réponse si l'opération est en cours d'exécution :
             id: 8,
             type: "task",
             status: "running",
-            task: {
-                label: "Registering application MY_APP"
-                output: "...",
-                progress: "1272/19473"
+            label: "Registering application MY_APP"
+            output: "...",
+            progress: "1272/19473"
+            typedData: {
             }
         }
     }
-
-* Exécuter l'opération en synchrone :
-
-    POST /api/v1/transactions/123/operations/8
-
-Réponse :
-
-    HTTP/1.1 200 OK
-    {
-        success: true,
-        data: {
-            uri: ".../8",
-            id: 8,
-            type: "task",
-            status: "OK",
-            next: ".../9"
-            task: {
-                label: "Registering application MY_APP",
-                output: "...",
-                progress: "100%"
-            }
-        }
-    }
-
-Réponse si fin de transaction :
-
-    HTTP/1.1 200 OK
-    {
-        success: true,
-        data: {
-            uri: ".../8",
-            id: 8,
-            type: "task",
-            label: "Registering application MY_APP"
-            status: "OK",
-            next: "end"
-        }
-    }
-
-Quand `next` vaut `end`, alors le `status` de la transasction passe à `end` et
-`currentOperation` de la transaction passent à vide.
-
-Le client doit alors supprimer la transaction avec `DELETE`.
-
-Réponse si erreur :
-
-    HTTP/1.1 200 OK
-    {
-        success: true,
-        data: {
-            uri: ".../8",
-            id: 8,
-            type: "task",
-            label: "Registering application MY_APP"
-            status: "KO",
-            output: "Erreur: ..."
-        }
-    }
-
-Réponse si opération déjà en cours d'exécution :
-
-    HTTP/1.1 409 Conflict
-    {
-        success: false,
-        error: "Operation 9 is already running."
-    }
-
-* Exécuter l'opération en asynchrone :
-
-    POST /api/v1/transactions/123/operations/8?async
-
-Réponse :
-
-    HTTP/1.1 200 OK
-    {
-        success: true,
-        data: {
-            uri: ".../8",
-            id: 8,
-            type: "task",
-            label: "Registering application MY_APP"
-            status: "running",
-            output: "",
-            progress: ""
-        }
-    }
-
-* Arrêter une opération qui tourne
-
-    DELETE /api/v1/transactions/123/operations/8
-
-Réponse :
-
-    HTTP/1.1 200 OK
-    {
-        success: true
-    }
-
-Réponse si l'opération ne tourne pas :
-
-    HTTP/1.1 409 Conflict
-    {
-        success: false,
-        error: "Operation 8 is not runnning."
-    }
-
-* Skipper une opération qui est en échec :
-
-    POST /api/v1/transactions/123/operations/8?skip
-
-Réponse :
-
-    HTTP/1.1 200 OK
-    {
-        success: true,
-        data: {
-            uri: ".../8",
-            id: 8,
-            type: "task",
-            label: "Registering application MY_APP"
-            status: "KO",
-            output: "Error: ...",
-            next: ".../9"
-        }
-    }
-
-Réponse si l'opération n'est pas en échec ou tourne encore :
-
-    HTTP/1.1 409 Conflict
-    {
-        success: false,
-        error: "Operation 8 is runnning."
-    }
-
-    HTTP/1.1 409 Conflict
-    {
-        success: false,
-        error: "Operation 8 is not in failed state."
-    }
-
 
 
 

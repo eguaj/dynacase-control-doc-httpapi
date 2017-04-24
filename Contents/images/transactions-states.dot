@@ -17,8 +17,6 @@ digraph D {
 		edge [color=blue];
 		"initializing" -> "ready";
 
-		"ready" -> "licenses";
- 		"ready" -> "parameters";
 		"ready" -> "end";
 		"ready" -> "running";
 
@@ -36,5 +34,7 @@ digraph D {
 		"error" -> "running";
 
 		"pause" -> "running";
+		"pause" -> "licenses";
+		"pause" -> "parameters";
 	}
 }
