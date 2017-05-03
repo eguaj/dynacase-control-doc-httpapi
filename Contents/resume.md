@@ -1215,6 +1215,120 @@ Réponse si l'opération est en cours d'exécution :
         }
     }
 
+### archives/
+
+|  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
+| ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
+| GET    | **/api/v1/archives/**                                                |                | Récupérer la liste des archives                                      |
+| PUT    |                                                                      |                | Lancer la création d'une archive du contexte                         |
+| POST   |                                                                      |                | Téléverser le fichier d'une archive                                  |
+| DELETE |                                                                      |                | -                                                                    |
+
+* Récupérer la liste des archives :
+
+    GET /api/v1/archives/
+
+Réponse :
+
+    HTTP/1.1 200 OK
+    {
+        success: true,
+        data: [
+            {
+                uri: ".../<archiveId>",
+                id: <archiveId>,
+                ...
+            },
+            ...
+        ]
+    }
+
+* Lancer la création d'une archive :
+
+    PUT /api/v1/archives/
+
+Réponse :
+
+    HTTP/1.1 200 OK
+    {
+        success: true,
+        data: {
+            uri: ".../api/v1/transactions/<txId>",
+            id: <txId>,
+            ...
+        }
+    }
+
+La demande de création d'une archive retourne une transaction.
+
+* Téléverser une archive :
+
+    POST /api/v1/archives/
+
+    <archiveRawData>
+
+Réponse :
+
+    {
+        success: true,
+        data: {
+            uri: ".../<archiveId>",
+            id: <archiveId>,
+            ...
+        }
+    }
+
+### archives/{archiveId}
+
+|  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
+| ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
+| GET    | **/api/v1/archives/{archiveId}**                                     |                | Récupérer le détail d'une archive                                    |
+| PUT    |                                                                      |                | -                                                                    |
+| POST   |                                                                      |                | -                                                                    |
+| DELETE |                                                                      |                | Supprimer une archive                                                |
+
+* Récupérer le détail d'une archive :
+
+    GET /api/v1/archives/<archiveId>
+
+Réponse :
+
+    HTTP/1.1 200 OK
+    {
+        success: true,
+        data: {
+            uri: ".../<archiveId>",
+            id: <archiveId>,
+            ...
+        }
+    }
+
+* Télécharger une archive :
+
+    GET /api/v1/archives/<archiveId>?download=yes
+
+Résponse :
+
+    HTTP/1.1 200 OK
+    <archiveRawData>
+
+* Supprimer une archive :
+
+    DELETE /api/v1/archives/<archiveId>
+
+Réponse :
+
+    HTTP/1.1 200 OK
+    {
+        success: true,
+        data: {
+            uri: ".../<archiveId>",
+            id: <archiveId>,
+            ...
+        }
+    }
+
+    
 
 
 
