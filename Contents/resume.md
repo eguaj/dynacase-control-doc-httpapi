@@ -1246,6 +1246,11 @@ Réponse :
 * Lancer la création d'une archive :
 
     PUT /api/v1/archives/
+    {
+        "name": "<archiveName>",
+        "description": "<archiveDescription>",
+        "excludeVault": true|false
+    }
 
 Réponse :
 
@@ -1264,8 +1269,7 @@ La demande de création d'une archive retourne une transaction.
 * Téléverser une archive :
 
     POST /api/v1/archives/
-
-    <archiveRawData>
+    &lt;archiveRawData&gt;
 
 Réponse :
 
@@ -1376,7 +1380,7 @@ Réponse :
 
 
 
-
+## END
 
 
 
