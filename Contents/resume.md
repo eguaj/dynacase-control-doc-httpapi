@@ -541,110 +541,13 @@ Réponse :
         "success": true
     }
 
-### context
-
-|  Type  |                                 URL                                |    Implanté    |                            Signification                             |
-| ------ | ------------------------------------------------------------------ | -------------- | -------------------------------------------------------------------- |
-| GET    | **/api/v1/context**                                                | 100%           | Informations du contexte s'il existe                                 |
-| PUT    | **/api/v1/context**                                                | 0%             | Modifier les propriétés du contexte                                  |
-| POST   | **/api/v1/context**                                                | 0%             | Créer un contexte                                                    |
-| DELETE | **/api/v1/context**                                                | 0%             | Supprimer le contexte                                                |
-
-#### GET
-
-* Propriétés du contexte :
-
-    GET /api/v1/context
-
-Réponse lorsqu'un contexte n'a pas encore été créé :
-
-    HTTP/1.1 404 Not found
-    {
-        "success": false
-    }
-
-Réponse lorsqu'un contexte existe ;
-
-    HTTP/1.1 200 OK
-    {
-        "success": true,
-        "data": {
-            "uri": "/api/v1/context",
-            "id": "production",
-            "root": "/var/www/production",
-            "url": "https://prod.example.net/"
-        }
-    }
-
-#### PUT
-
-* Modifier les propriétés du contexte :
-
-    PUT /api/v1/context
-    {
-        "description": "ACME Corp. production site",
-    }
-
-Réponse :
-
-    HTTP/1.1 200 OK
-    {
-        "success": true,
-        "data": {
-            "uri": "/api/v1/context",
-            "id": "production",
-            "root": "/var/www/production",
-            "description": "ACME Corp. production site"
-            "url": "http://prod.example.net"
-        }
-    }
-
-#### POST
-
-* Créer un contexte :
-
-    POST /api/v1/context
-    {
-        "id": "production",
-        "root": "/var/www/production"
-    }
-
-Réponse :
-
-    HTTP/1.1 200 OK
-    {
-        "success": true,
-        "data": {
-            "uri": "/api/v1/context",
-            "id": "production",
-            "root": "/var/www/production"
-        }
-    }
-
-Réponse si un context existe déjà :
-
-    HTTP/1.1 409 Conflict
-
-#### DELETE
-
-* Supprimer le contexte :
-
-    DELETE /api/v1/context
-
-Réponse :
-
-    HTTP/1.1 200 OK
-    {
-        "success": true,
-    }
-
-### (DRAFT) modules/
+### modules/
 
 |  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
 | ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
 | GET    | **/api/v1/modules/**                                                 | 100%           | Liste des modules installés/disponibles/upgradables sur le contexte  |
-| PUT    |                                                                      | 20%            | Installer ou mettre à jour un module                                 |
-| POST   |                                                                      | 0%             | Uploader un module et l'installer/upgrader dans le contexte          |
+| PUT    |                                                                      | 100%           | Installer ou mettre à jour un module                                 |
+| POST   |                                                                      | 100%           | Uploader un module et l'installer/upgrader dans le contexte          |
 | DELETE |                                                                      |                | -                                                                    |
 
 #### GET
@@ -841,7 +744,7 @@ Note :
 * Pour le moment, une seule transaction est gérée (transaction avec identifiant
   `0`). Normalement il ne devrait y avoir qu'une seule transaction.
 
-### (DRAFT) transactions/{xactId}
+### transactions/{xactId}
 
 |  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
 | ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
@@ -890,17 +793,6 @@ Commandes du processeur :
 
 ![Transactions states](transactions-states.png)
 
-Type d'opérations :
-
-`h1`..`h6`
-:   Élément de présentation représentant une section, un commentaire,
-    une information pour délimiter les opérations, etc.
-
-`task`
-:   Élément représentant une tâche a exécuter.
-
-
-
 * Obtenir le détail d'une transaction
 
     GET /api/v1/transactions/123
@@ -948,76 +840,17 @@ Réponse :
                 {
                     uri: "/api/v1/transactions/123/operations/1",
                     id: 1,
+                    operationContext: {
+                        type: "upgrade",
+                        phase: "pre-upgrade",
+                        module: "my-module"
                     status: "OK",
-                    type: "h1",
+                    type: "task",
                     label: "Installation of 'my-module'",
                     typedData: {
                     }
                 },
-                {
-                    uri: ".../2",
-                    id: 2,
-                    status: "OK",
-                    type: "h2",
-                    label: "Runnig pre-install...",
-                    typedData: {
-                    }
-                },
-                {
-                    uri: ".../3",
-                    id: 3,
-                    status: "running",
-                    type: "task",
-                    label: "Checking for Foo",
-                    typedData: {
-                    }
-                },
-                {
-                    uri: ".../4",
-                    id: 4,
-                    status: "",
-                    type: "task",
-                    label: "Checking for Bar",
-                    optional: true,
-                    typedData: {
-                    }
-                },
-                {
-                    uri: ".../5",
-                    id: 5,
-                    status: "",
-                    type: "h2",
-                    label: "Extracting files...",
-                    typedData: {
-                    }
-                },
-                {
-                    uri: ".../6",
-                    id: 6,
-                    status: "",
-                    type: "task",
-                    label: "Extracting files",
-                    typedData: {
-                    }
-                },
-                {
-                    uri: ".../7",
-                    id: 7,
-                    status: "",
-                    type: "h2",
-                    label: "Running post-install...",
-                    typedData: {
-                    }
-                },
-                {
-                    uri: ".../8",
-                    id: 8,
-                    status: "",
-                    type: "task",
-                    label: "Registering application MY_APP",
-                    typedData: {
-                    }
-                }
+                ...
             ]
         }
     }
@@ -1067,7 +900,6 @@ Réponse lorsque des paramètres sont requis :
             "uri": "/api/v1/transactions/123",
             "id": "123",
             "status": "parameters",
-            "currentOperation": 0,
             ...
         }
     }
@@ -1085,7 +917,6 @@ Réponse :
             "uri": "/api/v1/transactions/123",
             "id": "123",
             "status": "parameters",
-            "currentOperation": 0,
             ...
         }
     }
@@ -1094,7 +925,7 @@ Réponse :
 
     POST /api/v1/transactions/123?retry=yes
 
-Demande que l'opération courante #5 soit rejouée.
+Demande que l'opération courante soit rejouée.
 
 Possible seulement lorsque le processeur n'est pas dans l'état "running".
 
@@ -1102,7 +933,7 @@ Possible seulement lorsque le processeur n'est pas dans l'état "running".
 
     POST /api/v1/transactions/123?skip=yes
 
-Demande que l'opération courante #5 soit ignorée.
+Demande que l'opération courante soit ignorée.
 
 Possible seulement lorsque le processeur n'est pas dans l'état "running".
 
@@ -1110,7 +941,7 @@ Possible seulement lorsque le processeur n'est pas dans l'état "running".
 
     POST /api/v1/transactions/123?abort=yes
 
-Demande l'arrêt de l'opération courante #5.
+Demande l'arrêt de l'opération courante.
 
 Possible seulement lorsque le processeur est dans l'état "running".
 
@@ -1141,7 +972,7 @@ Réponse si la transaction n'est pas terminée :
 |  Type  |                                 URL                                        |    Implanté    |                            Signification                             |
 | ------ | -------------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
 | GET    |                                                                            |                | -                                                                    |
-| PUT    | **/api/v1/transactions/{xactId}/module-parameters/{moduleId}/{paramName}** |                | Définir la valeur du paramètre                                       |
+| PUT    | **/api/v1/transactions/{xactId}/module-parameters/{moduleId}/{paramName}** | 100%           | Définir la valeur du paramètre                                       |
 | POST   |                                                                            |                | -                                                                    |
 | DELETE |                                                                            |                | -                                                                    |
 
@@ -1157,7 +988,7 @@ Réponse si la transaction n'est pas terminée :
 |  Type  |                                 URL                                        |    Implanté    |                            Signification                             |
 | ------ | -------------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
 | GET    |                                                                            |                | -                                                                    |
-| PUT    | **/api/v1/transactions/{xactId}/module-licenses/{moduleId}**               |                | Définir la valeur du paramètre                                       |
+| PUT    | **/api/v1/transactions/{xactId}/module-licenses/{moduleId}**               | 100%           | Définir la valeur du paramètre                                       |
 | POST   |                                                                            |                | -                                                                    |
 | DELETE |                                                                            |                | -                                                                    |
 
@@ -1172,7 +1003,7 @@ Réponse si la transaction n'est pas terminée :
 
 |  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
 | ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
-| GET    | **/api/v1/transactions/{xactId}/operations/{opId}**                  |                | Récupérer le détail d'une opération                                  |
+| GET    | **/api/v1/transactions/{xactId}/operations/{opId}**                  | 100%           | Récupérer le détail d'une opération                                  |
 | PUT    |                                                                      |                | -                                                                    |
 | POST   |                                                                      |                | -                                                                    |
 | DELETE |                                                                      |                | -                                                                    |
@@ -1219,10 +1050,10 @@ Réponse si l'opération est en cours d'exécution :
 
 |  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
 | ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
-| GET    | **/api/v1/archives/**                                                |                | Récupérer la liste des archives                                      |
-| PUT    |                                                                      |                | Lancer la création d'une archive du contexte                         |
-| POST   |                                                                      |                | Téléverser le fichier d'une archive                                  |
-| DELETE |                                                                      |                | -                                                                    |
+| GET    | **/api/v1/archives/**                                                | 100%           | Récupérer la liste des archives                                      |
+| PUT    | **/api/v1/archives/**                                                | 100%           | Lancer la création d'une archive du contexte                         |
+| POST   | **/api/v1/archives/**                                                | 100%           | Téléverser le fichier d'une archive                                  |
+| DELETE |                                                                      |                |                                                                      |
 
 * Récupérer la liste des archives :
 
@@ -1273,6 +1104,7 @@ La demande de création d'une archive retourne une transaction.
 
 Réponse :
 
+    HTTP/1.1 200 OK
     {
         success: true,
         data: {
@@ -1286,10 +1118,10 @@ Réponse :
 
 |  Type  |                                 URL                                  |    Implanté    |                            Signification                             |
 | ------ | -------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------- |
-| GET    | **/api/v1/archives/{archiveId}**                                     |                | Récupérer le détail d'une archive                                    |
+| GET    | **/api/v1/archives/{archiveId}**                                     | 100%           | Récupérer le détail d'une archive                                    |
 | PUT    |                                                                      |                | -                                                                    |
 | POST   |                                                                      |                | -                                                                    |
-| DELETE |                                                                      |                | Supprimer une archive                                                |
+| DELETE | **/api/v1/archives/{archiveId}**                                     | 100%           | Supprimer une archive                                                |
 
 * Récupérer le détail d'une archive :
 
@@ -1331,440 +1163,6 @@ Réponse :
             ...
         }
     }
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## END
-
-
-
-Légende :
-
-* Les URL en *italique* font références à des collections,
-* Les URL en **gras** font références à des ressources,
-
-<span class="flag inline nota-bene"></span> Les entrées documents de famillies et de trash possède aussi les sous-collections :
-
-* history,
-* revisions.
-
-<span class="flag inline nota-bene"></span> Les entrées en Future version sont prévues pour une implémentation future 
-mais non présentes dans la version courante de l'API.
-
-## Brouillon
-
-### Collections
-
-    dynacase-control/
-        parameters/
-        repositories/
-        contexts/
-            properties/
-            repositories/
-            modules/
-                parameters/
-        archives/
-        logs/
-
-### Index dépôts de paquets
-
-
-
-### Modélisation système de "Transaction" pour l'install/upgrade de modules
-
-Graphe orienté
-
-Lors de la demande d'installation - ou de mise à jour - d'un module dans un
-contexte, le serveur calcule et stocke le "graphe" des opérations dans ce que
-l'on nommera la Transaction.
-
-Exemple de Transaction pour l'installation de dynacase-core :
-
-    01 wstop (task)
-    02 install dyncase-core (h1)
-    03     license (h2)
-    04         ask license (prompt)
-    05     parameters (h2)
-    06         ask core_db (prompt)
-    07         ask ... (prompt)
-    08     pre-install (h2)
-    09         check aaa (task)
-    10         check ...
-    11     unpack (task)
-    12     post-install (h2)
-    13         process aaa (task)
-    14         process ...
-    15         process zzz
-    16 install dynacase-foo
-    17     license ask license
-    18     parameters
-    19         ask foo
-    20         ask ...
-    21     unpack
-    22 wstart
-
-Chaque nœud du graphe est typé :
-
-* "h1"..."h6" : Titre à présenter à l'utilisateur (presentational elements).
-* "task" : Tâche qui sera exécutée sur le serveur (executable element).
-* "prompt" : Présentation d'un message à l'utilisateur et demande de réponse
-  (inquisitive elements).
-
-Le graphe doit être "déroulé" par le client depuis le début et ne peut aller
-que de l'avant. Lorsqu'un nœud du "graphe" est en erreur, il peut rejouer le
-nœud mais il ne peut pas revenir en arrière (jouer/rejouer un nœud précédent)
-
-Le graphe stocke le nœud courant : le nœud sur lequel le client doit agir.
-
-Le client interprête donc le graphe pour le présenter à l'utilisateur et
-demander au serveur l'exécution de chaques nœud.
-
-Le client peut intérroger à tout moment le "status" de chaque nœuds. Cela
-permet au client de pouvoir ré-afficher à l'utilisateur les nœuds qui ont déjà
-été exécutés.
-
-Le client peut récupérer le graphe complet afin de pouvoir présenter à
-l'utilisateur l'ensemble des opérations, ou ce qui a déjà été utilisé, ou ce
-qui est à venir.
-
-
-
-Qu'elle est l'API la plus simple pour contrôler/dérouler ce "graphe" ?
-
-
-
-A partir de ce moment là, dynacase-control est "bloqué" sur cette Transaction :
-on ne peut plus faire aucune opération sur dynacase-control autre que de jouer
-ou annuler la Transaction.
-
-Le client peut se déconnecter et laisser le contexte en l'état.
-
-Lors de la reconnexion du client, si celui-ci veut manipuler le contexte, le
-serveur lui indiquera qu'une Transaction est en cours. Si la Transaction n'a
-pas été demarrée, alors le client peut l'annuler ou la démarrer. Si la
-Transaction a été demarrée, alors le client peut l'annuler ou la continuer.
-
-Lorsque la Transaction est annulée, le serveur "débloque" le contexte et le
-laisse en l'état.
-
-Une fois la transaction démarrée, le client va demander l'exécution de
-l'opération suivante jusqu'à ce que toutes les opérations aient été exécutés.
-
-Le serveur exécute les opérationn pas-à-pas sous la direction du client ? Ou
-bien il exécute toutes les opérations qui sont en OK et s'arrête sur un KO ou
-un prompt ?
-
-Le serveur exécute l'opération courante, et les opérations suivantes tant que
-le status de l'opération est OK ou que l'opération ne nécessite pas de données
-de la part de l'utilisateur.
-
-Ce mécanisme de Transaction est aussi utilisé lors de la suppression d'un
-contexte (pour dérouler les opérations de pre-delete).
-
-* Interroge si des transactions sont en cours :
-
-    > GET /transactions
-    < [123]
-
-Deux modes d'exécution : 
-
-* pas-à-pas : chaque opération est exécuté explicitement.
-* automatique : les opérations sont exécutés dans l'ordre jusqu'à ce qu'une
-  opération soit en erreur ou qu'elle demande une interaction avec le client.
-
-Status des opérations :
-
-* `OK` : l'opération a correctement été réalisée. Passer à l'opération
-  suivante.
-* `KO` (avec optional="yes|no") : l'opération a rencontré une erreur. Demander s'il faut ré-essayer
-  l'opération ou passer à la suivante.
-
-Exécution opération :
-
-   Receive request
-   If process already running Then
-      Check for stalled process
-      Send response with status="running"
-   EndIf
-   If async Then
-      Send response with status="running"
-      Detach from client connection
-   EndIf
-   Run process synchronously
-   Store process execution status
-   If sync Then
-      Send response with status="OK|KO"
-   EndIf
-   Exit
-
-Intérogation opération :
-
-   Receive request
-   If process already running Then
-   Else
-      
-   EndIf
-
-
-#### Transaction
-
-
-Exemple de transaction :
-
-    GET /api/v1/transactions/123
-
-Réponse :
-
-    HTTP/1.1 200 OK
-    {
-        success: true,
-        data: {
-            uri: "/api/v1/transactions/123",
-            id: 123,
-            status: "ready",
-            currentOperation: "",
-            operations: [
-                {
-                    uri: "/api/v1/transactions/123/operations/1",
-                    id: 1,
-                    status: "",
-                    h1: {
-                        label: "Installation of 'my-module'"
-                    }
-                },
-                {
-                    uri: ".../2",
-                    id: 2,
-                    status: "",
-                    license: {
-                        legalese: "xxx"
-                    }
-                },
-                {
-                    uri: ".../3",
-                    id: 3,
-                    status: "",
-                    prompt: {
-                        label: "Database postgresql service name",
-                        type: "text",
-                        values: "",
-                        default: "pre-production"
-                    }
-                },
-
-                {
-                    uri: ".../4",
-                    id: 4,
-                    status: "",
-                    h2: {
-                        label: "Runnig pre-install..."
-                    }
-                },
-                {
-                    uri: ".../5",
-                    id: 5,
-                    status: "",
-                    task: {
-                        label: "Checking for Foo",
-                    }
-                },
-                {
-                    uri: ".../6",
-                    id: 6,
-                    status: "",
-                    task: {
-                        label: "Checking for Bar",
-                        optional: true
-                    }
-                },
-                {
-                    uri: ".../7",
-                    id: 7,
-                    status: "",
-                    h2: {
-                        label: "Extracting files..."
-                    }
-                },
-                {
-                    uri: ".../8",
-                    id: 8,
-                    status: "",
-                    task: {
-                        label: "Extracting files",
-                    }
-                },
-                {
-                    uri: ".../9",
-                    id: 9,
-                    status: "",
-                    h2: {
-                        label: "Running post-install..."
-                    }
-                },
-                {
-                    uri: ".../10",
-                    id: 10,
-                    status: "",
-                    task: {
-                        label: "Registering application MY_APP"
-                    }
-                }
-            }
-        }
-    }
-
-#### Mode pas-à-pas (synchrone)
-
-* On démarre la transaction (`currentOperation` passe à 1) et on retourne
-  l'opération courante (#1)
-* On exécute l'opération courante (#1)
-* Si l'opération est "OK" alors `currentOperation` passe à 2 et on retourne
-  l'opération exécutée (#1) avec une propriété `next` qui contient l'URI de
-  l'opération suivante
-* Si l'opération est "KO" alors on retourne l'opération courante (#1)
-
-#### Mode automatique (asynchrone)
-
-* On démarre la transaction (`currentOperation` passe à 1) et on retourne
-  l'opération courante (#1) en `status: running`
-
-### Exécution operations
-
-Exécution des nœuds de type `task`.
-
-Les nœuds de type `task` sont un process qui est exécuté par dynacase-control.
-
-STDERR est redirigé dans STDOUT, et STDOUT est stocké dans un fichier.
-
-La transaction stocke le pid et le fichier de sortie du process.
-
-Le contenu du fichier de sortie n'est pas remonté par défaut lors de
-l'interrogation de l'opération : il faut explicitement le demander.
-
-On peut définir un protocole pour voir l'avancement de la tâche : le process
-émet sur STDOUT un message dans un format particulier qui permet de suivre
-l'avancement.
-
-L'avancement est envoyé sur STDOUT ? ou un fichier spécifique ?
-
-    [php]
-    
-    if (getenv('PROGRESS_FILE') !== false) {
-        progressFile = getenv('PROGRESS_FILE');
-    } else {
-        progressFile = 'php://stdout';
-    }
-    file_put_contents($progressFile, sprintf('PROGRESS-API:VERSION=1'.PHP_EOL, $percent), FILE_APPEND|LOCK_EX);
-    ...
-    file_put_contents($progressFile, sprintf('PROGRESS:%d%%'.PHP_EOL, $percent), FILE_APPEND|LOCK_EX);
-
-On peut aussi imaginer un mécanique similaire a cette Progress API pour que la
-tâche puisse communiquer des messages d'avertissement :
-
-    [php]
-    if (getenv('PROGRESS_FILE') !== false) {
-        warningFile = getenv('PROGRESS_FILE');
-    } else {
-        warningFile = 'php://stdout';
-    }
-    file_put_contents($warningFile, sprintf('WARNING:%s'.PHP_EOL, $warn), FILE_APPEND|LOCK_EX);
-
-#### Progress API
-
-Les process exécutés peuvent fournir leur avancement en envoyant un message
-dans leur flux de sortie STDOUT (ou dans un fichier spécifique).
-
-Progression (unsigned int)n/(unsigned int)total :
-
-    ^PROGRESS:\d+/\d+$
-
-Progression pourcentage (unsigned int)n% :
-
-    ^PROGRESS:\d+%$
-
-Progression "throbber" (compteur (unsigned int)n qui s'incrémente et wrappe) :
-
-    ^PROGRESS:\d+$
-
-Le client peut demander toute la sortie de la tâche :
-
-    > GET /transactions/123/operation/26?output
-    < {"id": 26, "status": "running", "label": "Record core application in database", "output": "..."}
-
-Ou bien seulement l'avancement (on retourne le dernier message d'avancement) :
-
-    > GET /transactions/123/operation/26?progress
-    < {"id": 26, "status": "running", "label": "Record core application in database", "progress:" "12/357"}
-    
-    ou
-    
-    > GET /transactions/123/operation/26?progress
-    < {"id": 26, "status": "running", "label": "Record core application in database", "progress:" "54%"}
-
-Ou bien on retourne systématiquement le dernier progress, lors de
-l'interrogation de l'operation, si le fichier de log contient des lignes de
-progress ?
-
-On peut aussi imaginer une API "Progress" fournit par dynacase-core 
-
-    $progress = new Progress();
-    $progress->setPercent(10);
-
-Avec la classe `Progress` qui peut détecter si elle s'exécute dans Dynacase Control ou en autonome ?
-
-* quand exec hors dynacase-control alors le message de progress est inhibé (ou
-  formatté autrement)
-* quand exec dans dynacase-control alors le message es émis au format PROGRESS
-  ou dans une fichier distinct.
-
-
-
 
 <!--links-->
 
